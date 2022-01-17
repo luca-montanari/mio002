@@ -13,14 +13,14 @@ import { environment } from 'src/environments/environment';
 export class InitFirebaseService {
 
     private firebaseApp: FirebaseApp;
-    private fireStore: Firestore;
+    private firestore: Firestore;
 
     public get App() {
         return this.firebaseApp;
     }
 
     public get FireStore() {
-        return this.fireStore;
+        return this.firestore;
     }
 
     constructor() {         
@@ -28,9 +28,9 @@ export class InitFirebaseService {
         this.firebaseApp = initializeApp(environment.firebase);
         console.log('InitFirebaseService', 'constructor', 'fine firebaseApp', DateTime.now());
         console.log('InitFirebaseService', 'constructor', 'inizio firestore', DateTime.now());
-        this.fireStore = getFirestore();
+        this.firestore = getFirestore();
         if (environment.useEmulators) {
-            connectFirestoreEmulator(this.fireStore, 'localhost', 8080);            
+            connectFirestoreEmulator(this.firestore, 'localhost', 8080);            
         }                
         console.log('InitFirebaseService', 'constructor', 'fine firestore', DateTime.now());
     }

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 
 import { InitFirebaseService } from './db/services/init-firebase.service';
 
@@ -12,13 +12,16 @@ import { InitFirebaseService } from './db/services/init-firebase.service';
 export class AppComponent {
 
     constructor(private firebase: InitFirebaseService) {
+        console.log('AppComponent', 'constructor');
         this.test();
     }
 
     async test() {
-        const docRef = doc(this.firebase.FireStore, "cities", "SF");
-        const docSnap = await getDoc(docRef);
-        console.log(docSnap);
+        console.log('AppComponent', 'test');
+        const querySnapshot = await getDocs(collection(this.firebase.FireStore, "docs"));
+        querySnapshot.forEach((doc) => {            
+            console.log(doc.id, " => ", doc.data());
+        });
     }
-    
+
 }
