@@ -9,7 +9,7 @@
     "test": "ng test",
     "emulator-run": "firebase emulators:start --only firestore,storage",
     "emulator-run-import": "firebase emulators:start --only firestore --import emulator/backup",
-    "emulator-export": "firebase emulators:export ./emulator/backup"    
+    "emulator-export": "firebase emulators:export ./emulator/backup"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +22,7 @@
     "@angular/platform-browser-dynamic": "~13.1.0",
     "@angular/router": "~13.1.0",
     "firebase": "^9.6.2",
+    "luxon": "^2.3.0",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
@@ -31,6 +32,7 @@
     "@angular/cli": "~13.1.2",
     "@angular/compiler-cli": "~13.1.0",
     "@types/jasmine": "~3.10.0",
+    "@types/luxon": "^2.0.9",
     "@types/node": "^12.11.1",
     "jasmine-core": "~3.10.0",
     "karma": "~6.3.0",
