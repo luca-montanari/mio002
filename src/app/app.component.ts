@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 
@@ -9,19 +10,16 @@ import { InitFirebaseService } from './db/services/init-firebase.service';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
 
-    constructor(private firebase: InitFirebaseService) {
-        console.log('AppComponent', 'constructor');
-        this.test();
+    constructor(private firebase: InitFirebaseService,
+                private router: Router) {
+        console.log('@@@', 'AppComponent', 'constructor', firebase.debug);        
+        firebase.debug = 'AppComponent';                
     }
-
-    async test() {
-        console.log('AppComponent', 'test');
-        const querySnapshot = await getDocs(collection(this.firebase.FireStore, "docs"));
-        querySnapshot.forEach((doc) => {            
-            console.log(doc.id, " => ", doc.data());
-        });
+    
+    ngAfterViewInit(): void {
+        this.router.navigate(['/docs']);
     }
 
 }

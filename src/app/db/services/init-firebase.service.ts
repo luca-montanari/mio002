@@ -6,14 +6,17 @@ import { getFirestore, connectFirestoreEmulator, Firestore } from "firebase/fire
 import { DateTime } from 'luxon';
 
 import { environment } from 'src/environments/environment';
+import { DbModule } from '../db.module';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: DbModule
 })
 export class InitFirebaseService {
 
     private firebaseApp: FirebaseApp;
     private firestore: Firestore;
+
+    public debug: string = 'default';
 
     public get App() {
         return this.firebaseApp;
@@ -24,15 +27,16 @@ export class InitFirebaseService {
     }
 
     constructor() {         
-        console.log('InitFirebaseService', 'constructor', 'inizio firebaseApp', DateTime.now());
+        console.log('InitFirebaseService', 'constructor', this.debug);
+        this.debug = 'InitFirebaseService';
         this.firebaseApp = initializeApp(environment.firebase);
-        console.log('InitFirebaseService', 'constructor', 'fine firebaseApp', DateTime.now());
-        console.log('InitFirebaseService', 'constructor', 'inizio firestore', DateTime.now());
+        // console.log('InitFirebaseService', 'constructor', 'fine firebaseApp', DateTime.now());
+        // console.log('InitFirebaseService', 'constructor', 'inizio firestore', DateTime.now());
         this.firestore = getFirestore();
         if (environment.useEmulators) {
             connectFirestoreEmulator(this.firestore, 'localhost', 8080);            
         }                
-        console.log('InitFirebaseService', 'constructor', 'fine firestore', DateTime.now());
+        // console.log('InitFirebaseService', 'constructor', 'fine firestore', DateTime.now());
     }
 
 }
