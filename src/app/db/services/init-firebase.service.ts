@@ -27,7 +27,7 @@ export class InitFirebaseService {
     }
 
     constructor() {         
-        console.log('InitFirebaseService', 'constructor', this.debug);
+        console.log('@@@', 'InitFirebaseService', 'constructor', this.debug);
         this.debug = 'InitFirebaseService';
         this.firebaseApp = initializeApp(environment.firebase);
         // console.log('InitFirebaseService', 'constructor', 'fine firebaseApp', DateTime.now());

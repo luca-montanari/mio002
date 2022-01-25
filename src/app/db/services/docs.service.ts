@@ -17,15 +17,16 @@ export const DOCS_COLLECTION_NAME = 'docs';
 export class DocsService {
     
     constructor(private firebase: InitFirebaseService) {        
-        console.log('DocsService', 'constructor', this.firebase.debug);
+        console.log('@@@', 'DocsService', 'constructor', this.firebase.debug);
         this.firebase.debug = 'DocsService';
     }
     
     getAllDocs(): Observable<Doc[]> {
+        console.log('@@@', 'DocsService', 'getAllDocs', this.firebase.debug);
         const collectionReference = collection(this.firebase.FireStore, DOCS_COLLECTION_NAME).withConverter(docConverter);
         const querySnapshot =  getDocs(collectionReference);
         return from(querySnapshot)
-            .pipe(
+            .pipe(                
                 map(querySnapshot => {
                     const docs: Doc[] = [];
                     querySnapshot.forEach((queryDocumentSnapshot) => {                        
