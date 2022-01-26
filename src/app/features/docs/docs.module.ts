@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { DocsRoutingModule } from './docs-routing.module';
 import { DocsHomeComponent } from './docs-home/docs-home.component';
 import { DocsTableComponent } from './docs-table/docs-table.component';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 
 @NgModule({
@@ -13,6 +14,7 @@ import { DocsTableComponent } from './docs-table/docs-table.component';
   ],
   imports: [
     CommonModule,
+    SharedModule,
     DocsRoutingModule
   ]
 })
