@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { from, map, Observable } from 'rxjs';
+import { defer, from, map, Observable, of } from 'rxjs';
 
 import { collection, getDocs } from "firebase/firestore";
 
@@ -24,8 +24,7 @@ export class DocsService {
     getAllDocs(): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'getAllDocs', this.firebase.debug);
         const collectionReference = collection(this.firebase.FireStore, DOCS_COLLECTION_NAME).withConverter(docConverter);
-        const querySnapshot =  getDocs(collectionReference);
-        return from(querySnapshot)
+        return defer(() => getDocs(collectionReference))
             .pipe(                
                 map(querySnapshot => {
                     const docs: Doc[] = [];

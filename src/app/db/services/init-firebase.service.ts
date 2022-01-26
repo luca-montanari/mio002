@@ -22,7 +22,7 @@ export class InitFirebaseService {
         return this.firebaseApp;
     }
 
-    public get FireStore() {
+    public get FireStore() {        
         return this.firestore;
     }
 

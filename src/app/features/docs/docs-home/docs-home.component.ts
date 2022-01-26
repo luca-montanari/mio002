@@ -13,13 +13,13 @@ import { InitFirebaseService } from 'src/app/db/services/init-firebase.service';
 })
 export class DocsHomeComponent {
 
-    allDocs: Observable<Doc[]>;
+    // allDocs: Observable<Doc[]>;
 
     constructor(private firebase: InitFirebaseService,
                 private docsService: DocsService) {
         console.log('@@@', 'DocsHomeComponent', 'constructor', firebase.debug);        
         firebase.debug = 'DocsHomeComponent';
-        this.allDocs = docsService.getAllDocs();
+        // this.allDocs = docsService.getAllDocs();
         // docsService.getAllDocs().subscribe(docs => {
         //     console.log('@@@', 'DocsHomeComponent', 'getAllDocs', 'subscribe', docs);
         // });
