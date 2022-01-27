@@ -16,8 +16,6 @@ export class InitFirebaseService {
     private firebaseApp: FirebaseApp;
     private firestore: Firestore;
 
-    public debug: string = 'default';
-
     public get App() {
         return this.firebaseApp;
     }
@@ -27,16 +25,12 @@ export class InitFirebaseService {
     }
 
     constructor() {         
-        console.log('@@@', 'InitFirebaseService', 'constructor', this.debug);
-        this.debug = 'InitFirebaseService';
+        console.log('@@@', 'InitFirebaseService', 'constructor');
         this.firebaseApp = initializeApp(environment.firebase);
-        // console.log('InitFirebaseService', 'constructor', 'fine firebaseApp', DateTime.now());
-        // console.log('InitFirebaseService', 'constructor', 'inizio firestore', DateTime.now());
         this.firestore = getFirestore();
         if (environment.useEmulators) {
             connectFirestoreEmulator(this.firestore, 'localhost', 8080);            
         }                
-        // console.log('InitFirebaseService', 'constructor', 'fine firestore', DateTime.now());
     }
 
 }

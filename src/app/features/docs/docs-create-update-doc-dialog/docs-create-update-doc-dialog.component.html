@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>Crea nuovo doc</h2>
+<mat-dialog-content [formGroup]="formGroup">
+    <mat-form-field appearance="outline">
+        <mat-label>Codice</mat-label>
+        <input matInput type="text" formControlName="code">
+    </mat-form-field>    
+    <mat-form-field appearance="fill">
+        <mat-label>Descrizione</mat-label>
+        <input matInput type="text" formControlName="description">
+    </mat-form-field>    
+    <mat-form-field appearance="outline">
+        <mat-label>Categoria</mat-label>
+        <input matInput type="text" formControlName="category">
+    </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-raised-button (click)="cancel()">
+        Annulla
+    </button>
+    <button mat-raised-button color="primary" (click)="confirm()">
+        Salva
+    </button>
+</mat-dialog-actions>

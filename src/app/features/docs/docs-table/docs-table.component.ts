@@ -1,16 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+
+import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 
 import { DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
 import { OrderByCondition } from 'src/app/db/models/shared/orderByCondition';
-import { orderBy } from 'firebase/firestore';
+import { DocsCreateUpdateDocDialogComponent } from '../docs-create-update-doc-dialog/docs-create-update-doc-dialog.component';
+import { Doc } from 'src/app/db/models/docs/doc';
+import { throwToolbarMixedModesError } from '@angular/material/toolbar';
+import { getDoc } from 'firebase/firestore';
 
 @Component({
     selector: 'mio002-docs-table',
     templateUrl: './docs-table.component.html',
     styleUrls: ['./docs-table.component.scss']
 })
-export class DocsTableComponent implements OnInit {
+export class DocsTableComponent implements OnInit, OnDestroy {
 
     // Colonne visualizzate in tabella
     displayedColumns: string[] = ['code', 'description', 'category'];
@@ -18,7 +23,8 @@ export class DocsTableComponent implements OnInit {
     // DataSource della tabella
     dataSource: DocsTableDataSource = new DocsTableDataSource();
 
-    constructor(private docsService: DocsService) {
+    constructor(private docsService: DocsService,
+                private dialog: MatDialog) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
     }
 
@@ -36,8 +42,55 @@ export class DocsTableComponent implements OnInit {
         });        
     }
 
+    ngOnDestroy(): void {
+        console.log('@@@', 'DocsTableComponent', 'ngOnDestroy');
+    }
+
     createNewDoc() {
         console.log('@@@', 'DocsTableComponent', 'createNewDoc');
+        const dialogConfig = new MatDialogConfig<DocsCreateUpdateDocDialogComponent>();
+        dialogConfig.disableClose = true;
+        dialogConfig.autoFocus = true;
+        dialogConfig.minWidth = "400px";
+        dialogConfig.data = null;
+        dialogConfig.closeOnNavigation = false;
+        const matDialogRef: MatDialogRef<DocsCreateUpdateDocDialogComponent, Partial<Doc>> = this.dialog.open<DocsCreateUpdateDocDialogComponent>(DocsCreateUpdateDocDialogComponent, dialogConfig);
+        matDialogRef
+            .afterClosed()
+            .subscribe(docData => {
+                console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', docData);
+                if (!docData) {
+                    console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog annullando la modifica');
+                    return;
+                }
+                console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog confermando la modifica');
+
+
+                this.docsService.createNewDoc(docData)
+                    .subscribe(doc => {
+                        getDoc(doc).then(a => console.log('oooooooo', a));
+                        console.log('dddddddddd', doc);
+                    });
+
+
+                // this.docsService.creaDocumento(datiDelNuovoDocumento)
+                //     .pipe(
+                //         tap(
+                //             value => console.log('@@@', 'Test001Component', 'CreaNuovoDoc', 'prima di creare un documento', value)
+                //         ),
+                //         catchError(err => {
+                //             console.log('@@@', 'errore', err)
+                //             return EMPTY;
+                //         })
+                //     )
+                //     .subscribe(
+                //         documentReference => {
+                //             console.log('@@@', 'Test001Component', 'CreaNuovoDoc', 'documento creato', documentReference);
+                //         }
+                //     );
+            });
+
+
     }
 
     deleteSelectedDocs() {

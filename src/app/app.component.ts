@@ -14,8 +14,7 @@ export class AppComponent implements AfterViewInit {
 
     constructor(private firebase: InitFirebaseService,
                 private router: Router) {
-        console.log('@@@', 'AppComponent', 'constructor', firebase.debug);        
-        firebase.debug = 'AppComponent';                
+        console.log('@@@', 'AppComponent', 'constructor');        
     }
     
     ngAfterViewInit(): void {

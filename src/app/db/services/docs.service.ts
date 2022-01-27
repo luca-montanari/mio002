@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 
 import { defer, from, map, Observable, of } from 'rxjs';
 
-import { collection, CollectionReference, getDocs, orderBy, Query, query, QueryConstraint, QuerySnapshot } from "firebase/firestore";
+import { addDoc, collection, CollectionReference, DocumentReference, getDoc, getDocs, orderBy, Query, query, QueryConstraint, QuerySnapshot } from "firebase/firestore";
 
 import { DbModule } from '../db.module';
 import docConverter from '../models/docs/doc.converter';
 import { InitFirebaseService } from './init-firebase.service';
 import { Doc } from '../models/docs/doc';
 import { OrderByCondition } from '../models/shared/orderByCondition';
+import { ExternalReference } from '@angular/compiler';
 
 export const DOCS_COLLECTION_NAME = 'docs';
 
@@ -18,18 +19,17 @@ export const DOCS_COLLECTION_NAME = 'docs';
 export class DocsService {
     
     constructor(private firebase: InitFirebaseService) {        
-        console.log('@@@', 'DocsService', 'constructor', this.firebase.debug);
-        this.firebase.debug = 'DocsService';
+        console.log('@@@', 'DocsService', 'constructor');
     }
     
     getAllDocs(): Observable<Doc[]> {
-        console.log('@@@', 'DocsService', 'getAllDocs', this.firebase.debug);
+        console.log('@@@', 'DocsService', 'getAllDocs');
         const q = query(this.getCollectionReference());
         return this.getDocsFromQuery(q);
     }
 
     getDocs(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
-        console.log('@@@', 'DocsService', 'getDocs', this.firebase.debug);
+        console.log('@@@', 'DocsService', 'getDocs', orderByConditions);
         const collectionReference = this.getCollectionReference();
         const queryConstraints: QueryConstraint[] = [];
         if (orderByConditions) {
@@ -39,6 +39,11 @@ export class DocsService {
         }
         const q = query(collectionReference, ...queryConstraints);
         return this.getDocsFromQuery(q);
+    }
+
+    createNewDoc(docData: Partial<Doc>): Observable<DocumentReference<Partial<Doc>>> {
+        console.log('@@@', 'DocsService', 'createNewDoc', docData);
+        return defer(() => addDoc<Partial<Doc>>(this.getCollectionReference(), docData));
     }
 
     private getDocsFromQuery(q: Query<Doc>): Observable<Doc[]> {

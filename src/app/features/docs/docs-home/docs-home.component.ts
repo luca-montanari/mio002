@@ -17,12 +17,7 @@ export class DocsHomeComponent {
 
     constructor(private firebase: InitFirebaseService,
                 private docsService: DocsService) {
-        console.log('@@@', 'DocsHomeComponent', 'constructor', firebase.debug);        
-        firebase.debug = 'DocsHomeComponent';
-        // this.allDocs = docsService.getAllDocs();
-        // docsService.getAllDocs().subscribe(docs => {
-        //     console.log('@@@', 'DocsHomeComponent', 'getAllDocs', 'subscribe', docs);
-        // });
+        console.log('@@@', 'DocsHomeComponent', 'constructor');        
     }
 
 }
