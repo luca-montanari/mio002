@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 
-import { getDoc, Timestamp } from 'firebase/firestore';
+import { getDoc, Timestamp, FieldValue } from 'firebase/firestore';
 
 import { DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
@@ -66,12 +66,12 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog confermando la modifica');
 
                 docData.timestampClientAddDoc = Timestamp.now();
+                
                 this.docsService.addDoc(docData)
                     .subscribe(doc => {
                         getDoc(doc).then(a => console.log('oooooooo', a));
                         console.log('dddddddddd', doc);
                     });
-
 
                 // this.docsService.creaDocumento(datiDelNuovoDocumento)
                 //     .pipe(
