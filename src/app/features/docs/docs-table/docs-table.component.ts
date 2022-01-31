@@ -2,13 +2,13 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 
+import { getDoc, Timestamp } from 'firebase/firestore';
+
 import { DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
 import { OrderByCondition } from 'src/app/db/models/shared/orderByCondition';
 import { DocsCreateUpdateDocDialogComponent } from '../docs-create-update-doc-dialog/docs-create-update-doc-dialog.component';
 import { Doc } from 'src/app/db/models/docs/doc';
-import { throwToolbarMixedModesError } from '@angular/material/toolbar';
-import { getDoc } from 'firebase/firestore';
 
 @Component({
     selector: 'mio002-docs-table',
@@ -36,7 +36,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
             orderByDirection: 'asc'
         };
         orderByConditions.push(orderByCondition);
-        this.docsService.getDocs(orderByConditions).subscribe(docs => {
+        this.docsService.query(orderByConditions).subscribe(docs => {
             console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'getAllDocs', 'subscribe', docs);
             this.dataSource.setData(docs);            
         });        
@@ -65,8 +65,8 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 }
                 console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog confermando la modifica');
 
-
-                this.docsService.createNewDoc(docData)
+                docData.timestampClientAddDoc = Timestamp.now();
+                this.docsService.addDoc(docData)
                     .subscribe(doc => {
                         getDoc(doc).then(a => console.log('oooooooo', a));
                         console.log('dddddddddd', doc);

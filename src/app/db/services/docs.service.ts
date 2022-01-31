@@ -28,8 +28,8 @@ export class DocsService {
         return this.getDocsFromQuery(q);
     }
 
-    getDocs(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
-        console.log('@@@', 'DocsService', 'getDocs', orderByConditions);
+    query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
+        console.log('@@@', 'DocsService', 'query', orderByConditions);
         const collectionReference = this.getCollectionReference();
         const queryConstraints: QueryConstraint[] = [];
         if (orderByConditions) {
@@ -41,8 +41,8 @@ export class DocsService {
         return this.getDocsFromQuery(q);
     }
 
-    createNewDoc(docData: Partial<Doc>): Observable<DocumentReference<Partial<Doc>>> {
-        console.log('@@@', 'DocsService', 'createNewDoc', docData);
+    addDoc(docData: Partial<Doc>): Observable<DocumentReference<Partial<Doc>>> {
+        console.log('@@@', 'DocsService', 'addDoc', docData);        
         return defer(() => addDoc<Partial<Doc>>(this.getCollectionReference(), docData));
     }
 
