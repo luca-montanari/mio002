@@ -5,4 +5,5 @@ export interface Doc {
     description: string;
     category?: string;
     timestampClientAddDoc: Timestamp;
+    timestampServerAddDoc: Timestamp;
 }

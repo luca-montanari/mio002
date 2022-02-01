@@ -2,7 +2,22 @@ import { Injectable } from '@angular/core';
 
 import { defer, from, map, Observable, of } from 'rxjs';
 
-import { addDoc, collection, CollectionReference, DocumentReference, getDoc, getDocs, orderBy, Query, query, QueryConstraint, QuerySnapshot } from "firebase/firestore";
+import { 
+    Timestamp, 
+    serverTimestamp, 
+    addDoc, 
+    collection, 
+    CollectionReference, 
+    DocumentReference, 
+    getDocs, 
+    orderBy, 
+    Query, 
+    query, 
+    QueryConstraint,
+    updateDoc,
+    writeBatch,
+    doc
+} from "firebase/firestore";
 
 import { DbModule } from '../db.module';
 import docConverter from '../models/docs/doc.converter';
@@ -41,10 +56,29 @@ export class DocsService {
         return this.getDocsFromQuery(q);
     }
 
-    addDoc(docData: Partial<Doc>): Observable<DocumentReference<Partial<Doc>>> {
-        console.log('@@@', 'DocsService', 'addDoc', docData);        
-        return defer(() => addDoc<Partial<Doc>>(this.getCollectionReference(), docData));
+    addDoc(docData: Partial<Doc>) {                
+        console.log('@@@', 'DocsService', 'addDoc', docData);                 
+        return defer(() => this.addDocPrivate(docData));
     }
+
+    private async addDocPrivate(docData: Partial<Doc>) {
+        docData.timestampClientAddDoc = Timestamp.now();
+        let newDoc = doc(this.getCollectionReference());
+        const batch = writeBatch(this.firebase.FireStore);                
+        await batch.set<Partial<Doc>>(newDoc, docData);        
+        await batch.update<Partial<Doc>>(newDoc, { timestampServerAddDoc: serverTimestamp() });
+        await batch.commit();
+        return newDoc;
+    }
+
+    // addDoc(docData: Partial<Doc>): Observable<DocumentReference<Partial<Doc>>> {                
+    //     console.log('@@@', 'DocsService', 'addDoc', docData);         
+    //     return defer(() => addDoc<Partial<Doc>>(this.getCollectionReference(), docData));
+    // }
+    // updateDoc(doc: DocumentReference, docData: Partial<Doc>) {        
+    //     console.log('@@@', 'DocsService', 'updateDoc', doc, docData); 
+    //     return defer(() => updateDoc<Partial<Doc>>(this.getCollectionReference(), docData));        
+    // }
 
     private getDocsFromQuery(q: Query<Doc>): Observable<Doc[]> {
         return defer(() => getDocs(q))

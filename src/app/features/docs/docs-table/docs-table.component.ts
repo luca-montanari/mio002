@@ -2,8 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 
-import { getDoc, Timestamp, FieldValue } from 'firebase/firestore';
-
 import { DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
 import { OrderByCondition } from 'src/app/db/models/shared/orderByCondition';
@@ -64,37 +62,23 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                     return;
                 }
                 console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog confermando la modifica');
-
-                docData.timestampClientAddDoc = Timestamp.now();
-                
-                this.docsService.addDoc(docData)
-                    .subscribe(doc => {
-                        getDoc(doc).then(a => console.log('oooooooo', a));
-                        console.log('dddddddddd', doc);
-                    });
-
-                // this.docsService.creaDocumento(datiDelNuovoDocumento)
-                //     .pipe(
-                //         tap(
-                //             value => console.log('@@@', 'Test001Component', 'CreaNuovoDoc', 'prima di creare un documento', value)
-                //         ),
-                //         catchError(err => {
-                //             console.log('@@@', 'errore', err)
-                //             return EMPTY;
-                //         })
-                //     )
-                //     .subscribe(
-                //         documentReference => {
-                //             console.log('@@@', 'Test001Component', 'CreaNuovoDoc', 'documento creato', documentReference);
-                //         }
-                //     );
+                this.addDoc(docData);
             });
-
-
     }
-
+    
     deleteSelectedDocs() {
         console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs');
+    }
+
+    private addDoc(docData: Partial<Doc>) {
+
+        // docData.timestampClientAddDoc = Timestamp.now();                
+        this.docsService.addDoc(docData)
+            .subscribe(doc => {                        
+                // getDoc(doc).then(a => console.log('oooooooo', a));
+                console.log('dddddddddd', doc);
+            });
+
     }
 
 }
