@@ -23,7 +23,11 @@ export class DocsTableDataSource extends DataSource<Doc> {
         this.dataStream.complete();
     }
 
-    setData(docs: Doc[]) {
+    public get getData () {
+        return this.dataStream.value;
+    }
+
+    public setData(docs: Doc[]) {
         this.dataStream.next(docs);
     }
 

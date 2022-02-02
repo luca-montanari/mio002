@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 
+import { concatMap } from 'rxjs';
+
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 
 import { DocsService } from 'src/app/db/services/docs.service';
@@ -35,8 +37,8 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         };
         orderByConditions.push(orderByCondition);
         this.docsService.query(orderByConditions).subscribe(docs => {
-            console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'getAllDocs', 'subscribe', docs);
-            this.dataSource.setData(docs);            
+            console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'query', 'subscribe', docs);
+            this.dataSource.setData(docs);
         });        
     }
 
@@ -62,7 +64,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                     return;
                 }
                 console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog confermando la modifica');
-                this.addDoc(docData);
+                this.createNewDocPrivate(docData);
             });
     }
     
@@ -70,13 +72,21 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs');
     }
 
-    private addDoc(docData: Partial<Doc>) {
-
-        // docData.timestampClientAddDoc = Timestamp.now();                
-        this.docsService.addDoc(docData)
-            .subscribe(doc => {                        
-                // getDoc(doc).then(a => console.log('oooooooo', a));
-                console.log('dddddddddd', doc);
+    private createNewDocPrivate(docData: Partial<Doc>) {        
+        this.docsService.createNewDoc(docData)
+            .pipe(
+                concatMap(documentReference => {
+                    return this.docsService.getDoc(documentReference);
+                })
+            )
+            .subscribe(documentSnapshot => {
+                let newDoc: Doc | undefined = documentSnapshot.data();
+                if (!newDoc) {
+                    throw new Error("La creazione del nuovo doc non è andata a buon fine");
+                }
+                const docs: Doc[] = this.dataSource.getData;
+                docs.push(newDoc);
+                this.dataSource.setData(docs);                
             });
 
     }

@@ -16,7 +16,8 @@ import {
     QueryConstraint,
     updateDoc,
     writeBatch,
-    doc
+    doc,
+    getDoc
 } from "firebase/firestore";
 
 import { DbModule } from '../db.module';
@@ -56,9 +57,14 @@ export class DocsService {
         return this.getDocsFromQuery(q);
     }
 
-    addDoc(docData: Partial<Doc>) {                
-        console.log('@@@', 'DocsService', 'addDoc', docData);                 
+    createNewDoc(docData: Partial<Doc>) {                
+        console.log('@@@', 'DocsService', 'createNewDoc', docData);                 
         return defer(() => this.addDocPrivate(docData));
+    }
+
+    getDoc(doc: DocumentReference<Doc>) {
+        console.log('@@@', 'DocsService', 'getDoc', doc);                 
+        return defer(() => getDoc(doc));
     }
 
     private async addDocPrivate(docData: Partial<Doc>) {
