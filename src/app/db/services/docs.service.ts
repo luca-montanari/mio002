@@ -24,7 +24,7 @@ import { DbModule } from '../db.module';
 import docConverter from '../models/docs/doc.converter';
 import { InitFirebaseService } from './init-firebase.service';
 import { Doc } from '../models/docs/doc';
-import { OrderByCondition } from '../models/shared/orderByCondition';
+import { OrderByCondition } from '../models/shared/order-by-condition';
 import { ExternalReference } from '@angular/compiler';
 
 export const DOCS_COLLECTION_NAME = 'docs';

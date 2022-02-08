@@ -10,15 +10,10 @@ import { InitFirebaseService } from './db/services/init-firebase.service';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent {
 
-    constructor(private firebase: InitFirebaseService,
-                private router: Router) {
+    constructor() {
         console.log('@@@', 'AppComponent', 'constructor');        
     }
     
-    ngAfterViewInit(): void {
-        this.router.navigate(['/docs']);
-    }
-
 }

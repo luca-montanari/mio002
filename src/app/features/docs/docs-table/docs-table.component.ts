@@ -6,7 +6,7 @@ import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dial
 
 import { DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
-import { OrderByCondition } from 'src/app/db/models/shared/orderByCondition';
+import { OrderByCondition } from 'src/app/db/models/shared/order-by-condition';
 import { DocsCreateUpdateDocDialogComponent } from '../docs-create-update-doc-dialog/docs-create-update-doc-dialog.component';
 import { Doc } from 'src/app/db/models/docs/doc';
 

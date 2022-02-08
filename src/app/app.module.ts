@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DbModule } from './db/db.module';
-import { DocsModule } from './features/docs/docs.module';
+import { HomeModule } from './features/home/home.module';
 import { SharedModule } from './shared/shared.module';
 
 @NgModule({
@@ -15,10 +15,10 @@ import { SharedModule } from './shared/shared.module';
     imports: [
         BrowserModule,
         AppRoutingModule,
-        DbModule,
-        DocsModule,
         BrowserAnimationsModule,
-        SharedModule
+        SharedModule,
+        DbModule,
+        HomeModule    
     ],
     providers: [],
     bootstrap: [AppComponent]
