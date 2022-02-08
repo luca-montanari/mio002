@@ -12,7 +12,7 @@ export class HomeComponent {
         console.log('@@@', 'HomeComponent', 'constructor');        
     }
 
-    OpenDocs() {
+    openDocs() {        
         this.router.navigate(['/docs']);
     }
 

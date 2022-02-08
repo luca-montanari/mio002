@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 import { FirebaseApp, initializeApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator, Firestore } from "firebase/firestore";
 
-import { DateTime } from 'luxon';
-
 import { environment } from 'src/environments/environment';
 import { DbModule } from '../db.module';
 
@@ -25,12 +23,13 @@ export class InitFirebaseService {
     }
 
     constructor() {         
-        console.log('@@@', 'InitFirebaseService', 'constructor');
+        console.log('@@@', 'InitFirebaseService', 'constructor');        
         this.firebaseApp = initializeApp(environment.firebase);
+        // Inizializza Firestore
         this.firestore = getFirestore();
         if (environment.useEmulators) {
             connectFirestoreEmulator(this.firestore, 'localhost', 8080);            
-        }                
+        }               
     }
 
 }
