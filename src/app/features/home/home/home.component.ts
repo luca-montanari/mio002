@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+const loadingText1: string = 'Inizializzazione dell\'accesso al database...';
+
 @Component({
   selector: 'mio002-home',
   templateUrl: './home.component.html',

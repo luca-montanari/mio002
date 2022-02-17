@@ -1,1 +1,11 @@
 <button (click)="openDocs()">DOCS</button>
+<ng-container 
+    [ngTemplateOutlet]="loading"
+    [ngTemplateOutletContext]="{text: 'World'}">
+</ng-container>
+<ng-template #loading let-text="text">
+    <div>
+        <span>{{ text }}</span>
+        <mat-spinner></mat-spinner>    
+    </div>
+</ng-template>

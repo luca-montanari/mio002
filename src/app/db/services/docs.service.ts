@@ -25,7 +25,6 @@ import docConverter from '../models/docs/doc.converter';
 import { InitFirebaseService } from './init-firebase.service';
 import { Doc } from '../models/docs/doc';
 import { OrderByCondition } from '../models/shared/order-by-condition';
-import { ExternalReference } from '@angular/compiler';
 
 export const DOCS_COLLECTION_NAME = 'docs';
 
@@ -76,15 +75,6 @@ export class DocsService {
         await batch.commit();
         return newDoc;
     }
-
-    // addDoc(docData: Partial<Doc>): Observable<DocumentReference<Partial<Doc>>> {                
-    //     console.log('@@@', 'DocsService', 'addDoc', docData);         
-    //     return defer(() => addDoc<Partial<Doc>>(this.getCollectionReference(), docData));
-    // }
-    // updateDoc(doc: DocumentReference, docData: Partial<Doc>) {        
-    //     console.log('@@@', 'DocsService', 'updateDoc', doc, docData); 
-    //     return defer(() => updateDoc<Partial<Doc>>(this.getCollectionReference(), docData));        
-    // }
 
     private getDocsFromQuery(q: Query<Doc>): Observable<Doc[]> {
         return defer(() => getDocs(q))
