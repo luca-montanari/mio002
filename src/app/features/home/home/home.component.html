@@ -1,9 +1,10 @@
 <button (click)="openDocs()">DOCS</button>
 <ng-container 
-    [ngTemplateOutlet]="loading"
+    *ngIf="(loading$ | async)?.loading"
+    [ngTemplateOutlet]="loadingTemplate"
     [ngTemplateOutletContext]="{text: 'World'}">
 </ng-container>
-<ng-template #loading let-text="text">
+<ng-template #loadingTemplate let-text="text">
     <div>
         <span>{{ text }}</span>
         <mat-spinner></mat-spinner>    

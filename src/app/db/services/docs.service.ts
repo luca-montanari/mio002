@@ -37,14 +37,20 @@ export class DocsService {
         console.log('@@@', 'DocsService', 'constructor');
     }
     
-    getAllDocs(): Observable<Doc[]> {
+    public getAllDocs(): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'getAllDocs');
+        if (!this.firebase.initialized) {
+            throw new Error("Accesso a Firebase non inizializzato");
+        }
         const q = query(this.getCollectionReference());
         return this.getDocsFromQuery(q);
     }
 
-    query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
+    public query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'query', orderByConditions);
+        if (!this.firebase.initialized) {
+            throw new Error("Accesso a Firebase non inizializzato");
+        }
         const collectionReference = this.getCollectionReference();
         const queryConstraints: QueryConstraint[] = [];
         if (orderByConditions) {
@@ -56,20 +62,26 @@ export class DocsService {
         return this.getDocsFromQuery(q);
     }
 
-    createNewDoc(docData: Partial<Doc>) {                
+    public createNewDoc(docData: Partial<Doc>) {                
         console.log('@@@', 'DocsService', 'createNewDoc', docData);                 
+        if (!this.firebase.initialized) {
+            throw new Error("Accesso a Firebase non inizializzato");
+        }
         return defer(() => this.addDocPrivate(docData));
     }
 
-    getDoc(doc: DocumentReference<Doc>) {
+    public getDoc(doc: DocumentReference<Doc>) {
         console.log('@@@', 'DocsService', 'getDoc', doc);                 
+        if (!this.firebase.initialized) {
+            throw new Error("Accesso a Firebase non inizializzato");
+        }
         return defer(() => getDoc(doc));
     }
 
     private async addDocPrivate(docData: Partial<Doc>) {
         docData.timestampClientAddDoc = Timestamp.now();
         let newDoc = doc(this.getCollectionReference());
-        const batch = writeBatch(this.firebase.FireStore);                
+        const batch = writeBatch(this.firebase.firestore);                
         await batch.set<Partial<Doc>>(newDoc, docData);        
         await batch.update<Partial<Doc>>(newDoc, { timestampServerAddDoc: serverTimestamp() });
         await batch.commit();
@@ -90,7 +102,7 @@ export class DocsService {
     }
 
     private getCollectionReference(): CollectionReference<Doc> {
-        return collection(this.firebase.FireStore, DOCS_COLLECTION_NAME).withConverter(docConverter);
+        return collection(this.firebase.firestore, DOCS_COLLECTION_NAME).withConverter(docConverter);
     }
 
 }

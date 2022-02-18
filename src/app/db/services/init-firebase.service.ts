@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { FirebaseApp, initializeApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator, Firestore } from "firebase/firestore";
 
+import { LoadingService } from 'src/app/shared/services/loading.service';
 import { environment } from 'src/environments/environment';
 import { DbModule } from '../db.module';
 
@@ -11,25 +12,44 @@ import { DbModule } from '../db.module';
 })
 export class InitFirebaseService {
 
-    private firebaseApp: FirebaseApp;
-    private firestore: Firestore;
+    private _firebaseApp!: FirebaseApp;
+    private _firestore!: Firestore;
 
-    public get App() {
-        return this.firebaseApp;
-    }
-
-    public get FireStore() {        
-        return this.firestore;
-    }
-
-    constructor() {         
+    constructor(private loadingService: LoadingService) {         
         console.log('@@@', 'InitFirebaseService', 'constructor');        
-        this.firebaseApp = initializeApp(environment.firebase);
-        // Inizializza Firestore
-        this.firestore = getFirestore();
-        if (environment.useEmulators) {
-            connectFirestoreEmulator(this.firestore, 'localhost', 8080);            
-        }               
     }
+
+    public get app(): FirebaseApp {
+        return this._firebaseApp;
+    }
+
+    public get firestore(): Firestore {        
+        return this._firestore;
+    }
+
+    public get initialized(): boolean {
+        return !!this._firebaseApp && !!this._firestore;
+    }
+
+    public initFirebase() {
+        console.log('@@@', 'InitFirebaseService', 'initFirebase');        
+        this.loadingService.show('Inizializzazione di Firebase in corso...')
+        try
+        {
+            this._firebaseApp = initializeApp(environment.firebase);
+            // Inizializza Firestore
+            this._firestore = getFirestore();
+            if (environment.useEmulators) {
+                connectFirestoreEmulator(this._firestore, 'localhost', 8080);            
+            }                   
+            
+            await new Promise(f => setTimeout(f, 1000));
+            
+        }
+        finally
+        {
+            this.loadingService.hide();
+        }
+    } 
 
 }
