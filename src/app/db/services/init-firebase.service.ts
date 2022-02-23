@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { FirebaseApp, initializeApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator, Firestore } from "firebase/firestore";
 
-import { LoadingService } from 'src/app/shared/services/loading.service';
 import { environment } from 'src/environments/environment';
 import { DbModule } from '../db.module';
 
@@ -15,7 +14,7 @@ export class InitFirebaseService {
     private _firebaseApp!: FirebaseApp;
     private _firestore!: Firestore;
 
-    constructor(private loadingService: LoadingService) {         
+    constructor() {         
         console.log('@@@', 'InitFirebaseService', 'constructor');        
     }
 
@@ -31,25 +30,24 @@ export class InitFirebaseService {
         return !!this._firebaseApp && !!this._firestore;
     }
 
-    public initFirebase() {
+    public async initFirebase(): Promise<void> {
         console.log('@@@', 'InitFirebaseService', 'initFirebase');        
-        this.loadingService.show('Inizializzazione di Firebase in corso...')
-        try
-        {
-            this._firebaseApp = initializeApp(environment.firebase);
-            // Inizializza Firestore
-            this._firestore = getFirestore();
-            if (environment.useEmulators) {
-                connectFirestoreEmulator(this._firestore, 'localhost', 8080);            
-            }                   
-            
-            await new Promise(f => setTimeout(f, 1000));
-            
+        this._firebaseApp = initializeApp(environment.firebase);
+        // Inizializza Firestore
+        this._firestore = getFirestore();
+        if (environment.useEmulators) {
+            connectFirestoreEmulator(this._firestore, 'localhost', 8080);            
         }
-        finally
-        {
-            this.loadingService.hide();
-        }
+        console.log('aaa111', new Date());
+        await new Promise(f => setTimeout(f, 3000));
+        console.log('aaa222', new Date());
+        return Promise.resolve();
+        // this.SleepForDebug(3000);
     } 
+
+    // private SleepForDebug(ms: number) {
+    //     const end = Date.now() + ms
+    //     while (Date.now() < end) continue
+    // }
 
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { delay, Observable } from 'rxjs';
+import { delay, finalize, from, Observable, of, tap } from 'rxjs';
 
 import { InitFirebaseService } from 'src/app/db/services/init-firebase.service';
 import { LoadingService } from 'src/app/shared/services/loading.service';
@@ -20,19 +20,45 @@ export class HomeComponent implements OnInit {
     
     constructor(private router: Router,
                 private initFirebaseService: InitFirebaseService,
-                public loadingService: LoadingService) {
+                private loadingService: LoadingService) {
         console.log('@@@', 'HomeComponent', 'constructor');        
+        this.loading$.subscribe(aaa => console.log('XXXXXXXX', aaa));
     }
     
     ngOnInit(): void {
         console.log('@@@', 'HomeComponent', 'ngOnInit');
-        if (!this.initFirebaseService.initialized) {
-            this.initFirebaseService.initFirebase();   
-        }        
+        this.initFirebaseServicePrivate();
     }
-    
+        
     public openDocs() {        
+        console.log('@@@', 'HomeComponent', 'openDocs');
         this.router.navigate(['/docs']);
+    }
+
+    private initFirebaseServicePrivate(): void {
+        console.log('@@@', 'HomeComponent', 'initFirebaseServicePrivate');
+        // this.loadingService.show('Inizializzazione di Firebase in corso...')
+        // // try
+        // // {
+        // if (!this.initFirebaseService.initialized) {
+        //     this.initFirebaseService.initFirebase()
+        //         .then(() => {
+        //             this.loadingService.hide()
+        //         });   
+        // }                                
+        // // }
+        // // finally
+        // // {
+        // //     this.loadingService.hide();
+        // // }
+        if (this.initFirebaseService.initialized) {
+            return;
+        }
+        this.loadingService.show('Inizializzazione di Firebase in corso...');
+        from(this.initFirebaseService.initFirebase())
+            .pipe(
+                finalize(() => this.loadingService.hide())
+            );
     }
 
 }
