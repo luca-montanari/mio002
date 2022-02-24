@@ -39,18 +39,14 @@ export class DocsService {
     
     public getAllDocs(): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'getAllDocs');
-        if (!this.firebase.initialized) {
-            throw new Error("Accesso a Firebase non inizializzato");
-        }
+        this.firebase.throwErrorIfNotInitialized();
         const q = query(this.getCollectionReference());
         return this.getDocsFromQuery(q);
     }
 
     public query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'query', orderByConditions);
-        if (!this.firebase.initialized) {
-            throw new Error("Accesso a Firebase non inizializzato");
-        }
+        this.firebase.throwErrorIfNotInitialized();
         const collectionReference = this.getCollectionReference();
         const queryConstraints: QueryConstraint[] = [];
         if (orderByConditions) {
@@ -64,17 +60,13 @@ export class DocsService {
 
     public createNewDoc(docData: Partial<Doc>) {                
         console.log('@@@', 'DocsService', 'createNewDoc', docData);                 
-        if (!this.firebase.initialized) {
-            throw new Error("Accesso a Firebase non inizializzato");
-        }
+        this.firebase.throwErrorIfNotInitialized();
         return defer(() => this.addDocPrivate(docData));
     }
 
     public getDoc(doc: DocumentReference<Doc>) {
         console.log('@@@', 'DocsService', 'getDoc', doc);                 
-        if (!this.firebase.initialized) {
-            throw new Error("Accesso a Firebase non inizializzato");
-        }
+        this.firebase.throwErrorIfNotInitialized();
         return defer(() => getDoc(doc));
     }
 

@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { delay, finalize, from, Observable, of, tap } from 'rxjs';
+import { concat, concatMap, concatWith, defer, delay, finalize, from, map, Observable, of, tap } from 'rxjs';
 
 import { InitFirebaseService } from 'src/app/db/services/init-firebase.service';
+import { CollectionsInfosService } from 'src/app/db/services/collections-infos.service';
 import { LoadingService } from 'src/app/shared/services/loading.service';
 import { LoadingData } from 'src/app/shared/services/models/loadingData';
 
@@ -20,6 +21,7 @@ export class HomeComponent implements OnInit {
     
     constructor(private router: Router,
                 private initFirebaseService: InitFirebaseService,
+                private collectionsInfosService: CollectionsInfosService,
                 private loadingService: LoadingService) {
         console.log('@@@', 'HomeComponent', 'constructor');        
         this.loading$.subscribe(aaa => console.log('XXXXXXXX', aaa));
@@ -27,7 +29,7 @@ export class HomeComponent implements OnInit {
     
     ngOnInit(): void {
         console.log('@@@', 'HomeComponent', 'ngOnInit');
-        this.initFirebaseServicePrivate();
+        this.initDbPrivate();
     }
         
     public openDocs() {        
@@ -35,27 +37,76 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/docs']);
     }
 
-    private initFirebaseServicePrivate(): void {
-        console.log('@@@', 'HomeComponent', 'initFirebaseServicePrivate');
-        // this.loadingService.show('Inizializzazione di Firebase in corso...')
-        // // try
-        // // {
-        // if (!this.initFirebaseService.initialized) {
-        //     this.initFirebaseService.initFirebase()
-        //         .then(() => {
-        //             this.loadingService.hide()
-        //         });   
-        // }                                
-        // // }
-        // // finally
-        // // {
-        // //     this.loadingService.hide();
-        // // }
+    private initDbPrivate() {
+        console.log('@@@', 'HomeComponent', 'initDb');
         if (this.initFirebaseService.initialized) {
             return;
-        }
-        this.loadingService.show('Inizializzazione di Firebase in corso...');
-        from(this.initFirebaseService.initFirebase())
+        }                
+        concat(
+            this.initFirebaseServicePrivate(),
+            this.initCollectionsInfosServicePrivate()
+        )   
+        .subscribe(allCollectionsInfos => {
+            console.log('aaaaaaaaaaaaaa', allCollectionsInfos)
+        });
+    }
+
+    private initFirebaseServicePrivate(): Observable<boolean> {
+        console.log('@@@', 'HomeComponent', 'initFirebaseServicePrivate');
+        return defer(
+                () => {
+                    this.loadingService.show('Inizializzazione di Firebase in corso...');
+                    return from(this.initFirebaseService.initFirebase());
+                })
+                .pipe(
+                    map(() => true),
+                    finalize(() => this.loadingService.hide())
+                );
+
+        // .subscribe(() => {
+        //      console.log('@@@', 'HomeComponent', 'initFirebaseServicePrivate', 'Inizializzazione di Firebase completata');
+        // });
+
+        // concat(
+        //     from(this.initFirebaseService.initFirebase()),
+        //     this.collectionsInfosService.loadAllCollectionsInfos()
+        //         .pipe(
+        //             tap(xxx => this.loadingService.show('Inizializzazione dati delle Collection...')),
+        //             delay(2000),
+        //         )
+        // )
+        // .subscribe(allCollectionsInfos => {
+        //     console.log('aaaaaaaaaaaaaa', allCollectionsInfos)
+        // });
+
+        // this.loadingService.show('Inizializzazione di Firebase in corso...');
+        // from(this.initFirebaseService.initFirebase())
+        //     .pipe(
+        //         concatMap(() => {
+        //             this.loadingService.show('Inizializzazione dati delle Collection...');        
+        //             return this.collectionsInfosService.loadAllCollectionsInfos()
+        //                 .pipe(
+        //                     delay(2000),
+        //                     finalize(() => this.loadingService.hide())
+        //                 )
+        //         })
+        //     )
+        //     .subscribe(allCollectionsInfos => {
+        //         console.log('aaaaaaaaaaaaaa', allCollectionsInfos)
+        //     });
+
+    }
+
+    private initCollectionsInfosServicePrivate() {
+        console.log('@@@', 'HomeComponent', 'initCollectionsInfosServicePrivate');
+        return defer(
+                () => {
+                    this.loadingService.show('Inizializzazione dati delle Collection...');
+                    return this.collectionsInfosService.loadAllCollectionsInfos()
+                        .pipe(
+                            delay(2000),
+                        )
+            })
             .pipe(
                 finalize(() => this.loadingService.hide())
             );

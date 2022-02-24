@@ -33,21 +33,18 @@ export class InitFirebaseService {
     public async initFirebase(): Promise<void> {
         console.log('@@@', 'InitFirebaseService', 'initFirebase');        
         this._firebaseApp = initializeApp(environment.firebase);
-        // Inizializza Firestore
         this._firestore = getFirestore();
         if (environment.useEmulators) {
             connectFirestoreEmulator(this._firestore, 'localhost', 8080);            
         }
-        console.log('aaa111', new Date());
-        await new Promise(f => setTimeout(f, 3000));
-        console.log('aaa222', new Date());
-        return Promise.resolve();
-        // this.SleepForDebug(3000);
-    } 
-
-    // private SleepForDebug(ms: number) {
-    //     const end = Date.now() + ms
-    //     while (Date.now() < end) continue
-    // }
+        await new Promise(f => setTimeout(f, 2000));
+    }
+    
+    public throwErrorIfNotInitialized() {
+        if (this.initialized) {
+            return;
+        }
+        throw new Error("Accesso a Firebase non inizializzato");
+    }
 
 }
