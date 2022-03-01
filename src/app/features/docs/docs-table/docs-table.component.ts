@@ -4,11 +4,13 @@ import { concatMap } from 'rxjs';
 
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 
-import { DocsService } from 'src/app/db/services/docs.service';
+import { COLLECTION_NAME_DOCS, DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
 import { OrderByCondition } from 'src/app/db/models/shared/order-by-condition';
 import { DocsCreateUpdateDocDialogComponent } from '../docs-create-update-doc-dialog/docs-create-update-doc-dialog.component';
 import { Doc } from 'src/app/db/models/docs/doc';
+import { CollectionsInfosService } from 'src/app/db/services/collections-infos.service';
+import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collection-info';
 
 @Component({
     selector: 'mio002-docs-table',
@@ -18,12 +20,13 @@ import { Doc } from 'src/app/db/models/docs/doc';
 export class DocsTableComponent implements OnInit, OnDestroy {
 
     // Colonne visualizzate in tabella
-    displayedColumns: string[] = ['code', 'description', 'category'];
+    displayedColumns: string[] = ['select', 'code', 'description', 'category'];
 
     // DataSource della tabella
     dataSource: DocsTableDataSource = new DocsTableDataSource();
 
-    constructor(private docsService: DocsService,
+    constructor(private collectionsInfosService: CollectionsInfosService,
+                private docsService: DocsService,
                 private dialog: MatDialog) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
     }
@@ -46,7 +49,11 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         console.log('@@@', 'DocsTableComponent', 'ngOnDestroy');
     }
 
-    createNewDoc() {
+    public get collectionInfo(): CollectionInfo {
+        return this.collectionsInfosService.getCollectionInfo(COLLECTION_NAME_DOCS);
+    }
+
+    public createNewDoc() {
         console.log('@@@', 'DocsTableComponent', 'createNewDoc');
         const dialogConfig = new MatDialogConfig<DocsCreateUpdateDocDialogComponent>();
         dialogConfig.disableClose = true;
@@ -68,7 +75,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
             });
     }
     
-    deleteSelectedDocs() {
+    public deleteSelectedDocs() {
         console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs');
     }
 

@@ -26,7 +26,7 @@ import { InitFirebaseService } from './init-firebase.service';
 import { Doc } from '../models/docs/doc';
 import { OrderByCondition } from '../models/shared/order-by-condition';
 
-export const DOCS_COLLECTION_NAME = 'docs';
+export const COLLECTION_NAME_DOCS = 'docs';
 
 @Injectable({
     providedIn: DbModule
@@ -94,7 +94,7 @@ export class DocsService {
     }
 
     private getCollectionReference(): CollectionReference<Doc> {
-        return collection(this.firebase.firestore, DOCS_COLLECTION_NAME).withConverter(docConverter);
+        return collection(this.firebase.firestore, COLLECTION_NAME_DOCS).withConverter(docConverter);
     }
 
 }

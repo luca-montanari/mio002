@@ -37,7 +37,7 @@ export class InitFirebaseService {
         if (environment.useEmulators) {
             connectFirestoreEmulator(this._firestore, 'localhost', 8080);            
         }
-        await new Promise(f => setTimeout(f, 2000));
+        await new Promise(f => setTimeout(f, 1000));
     }
     
     public throwErrorIfNotInitialized() {
