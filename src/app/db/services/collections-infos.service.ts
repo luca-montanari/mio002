@@ -16,14 +16,25 @@ export const COLLECTION_NAME_COLLECTIONSINFOS = 'collectionsInfos';
 })
 export class CollectionsInfosService {
 
+    /**
+     * Store dei dati delle collection
+     */
     private collectionsInfos = new BehaviorSubject<Map<string, CollectionInfo>>(new Map<string, CollectionInfo>());
 
     private collectionsInfos$: Observable<Map<string, CollectionInfo>> = this.collectionsInfos.asObservable();
 
+    /**
+     * Costruttore
+     * @param firebase servizio per connessione a firebase
+     */
     constructor(private firebase: InitFirebaseService) {
         console.log('@@@', 'CollectionsInfosService', 'constructor');
     }
 
+    /**
+     * Caricamento dei dati della collection senza connessione realtime
+     * @returns observable per accesso ai dati delle collection
+     */
     public loadAllCollectionsInfos(): Observable<Map<string, CollectionInfo>> {
         console.log('@@@', 'CollectionsInfosService', 'loadAllCollectionsInfos');
         this.firebase.throwErrorIfNotInitialized();
@@ -31,11 +42,14 @@ export class CollectionsInfosService {
         const allCollectionsInfos: Observable<Map<string, CollectionInfo>> = this.getCollectionsInfosFromQuery(queryGetAllDocumentsFromCollection);
         allCollectionsInfos.subscribe(this.collectionsInfos);
         return allCollectionsInfos;
-    }    
+    }
 
-    public getCollectionInfo(collectionName: string) : CollectionInfo {       
-        if (!this.allCollectionsInfos.has(collectionName))
-        {
+    public attachAllCollectionsInfos() {
+        
+    }
+
+    public getCollectionInfo(collectionName: string) : CollectionInfo {
+        if (!this.allCollectionsInfos.has(collectionName)) {
             throw new Error(`La collection ${collectionName} non è gestita`);
         }
         return this.collectionsInfos.value.get(collectionName)!;
