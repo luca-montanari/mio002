@@ -7,6 +7,7 @@ import { InitFirebaseService } from 'src/app/db/services/init-firebase.service';
 import { CollectionsInfosService } from 'src/app/db/services/collections-infos.service';
 import { LoadingService } from 'src/app/shared/services/loading.service';
 import { LoadingData } from 'src/app/shared/services/models/loadingData';
+import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collection-info';
 
 const loadingText1: string = 'Inizializzazione dell\'accesso al database...';
 
@@ -71,21 +72,6 @@ export class HomeComponent implements OnInit {
                 );     
     }
 
-    // private initCollectionsInfosServicePrivate() {
-    //     console.log('@@@', 'HomeComponent', 'initCollectionsInfosServicePrivate');
-    //     return defer(
-    //             () => {
-    //                 this.loadingService.show('Inizializzazione dati delle Collection...');
-    //                 return this.collectionsInfosService.loadAllCollectionsInfos()
-    //                     .pipe(
-    //                         delay(1000),
-    //                     )
-    //             })
-    //             .pipe(
-    //                 finalize(() => this.loadingService.hide())
-    //             );
-    // }
-
     private initCollectionsInfosServicePrivate() {
         console.log('@@@', 'HomeComponent', 'initCollectionsInfosServicePrivate');
         return defer(
@@ -100,5 +86,20 @@ export class HomeComponent implements OnInit {
                     finalize(() => this.loadingService.hide())
                 );
     }
+
+    // private initCollectionsInfosServicePrivate(): Observable<Map<string, CollectionInfo>> {
+    //     console.log('@@@', 'HomeComponent', 'initCollectionsInfosServicePrivate');
+    //     return defer(
+    //         () => {
+    //             this.loadingService.show('Inizializzazione dati delle Collection...');
+    //             return this.collectionsInfosService.loadAllCollectionsInfos()
+    //                 .pipe(
+    //                     delay(1000),
+    //                 )
+    //         })
+    //         .pipe(
+    //             finalize(() => this.loadingService.hide())
+    //         );        
+    // }
 
 }

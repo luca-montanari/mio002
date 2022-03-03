@@ -24,29 +24,18 @@ export class CollectionsInfosService {
         console.log('@@@', 'CollectionsInfosService', 'constructor');
     }
 
-    // public loadAllCollectionsInfos() {
-    //     console.log('@@@', 'CollectionsInfosService', 'loadAllCollectionsInfos');
-    //     this.firebase.throwErrorIfNotInitialized();
-    //     const queryGetAllDocumentsFromCollection = query(this.getCollectionReference());
-    //     return this.getCollectionsInfosFromQuery(queryGetAllDocumentsFromCollection);
-    // }    
-
-    public loadAllCollectionsInfos() {
+    public loadAllCollectionsInfos(): Observable<Map<string, CollectionInfo>> {
         console.log('@@@', 'CollectionsInfosService', 'loadAllCollectionsInfos');
         this.firebase.throwErrorIfNotInitialized();
-        const queryGetAllDocumentsFromCollection = query(this.getCollectionReference());
-        this.getCollectionsInfosFromQuery(queryGetAllDocumentsFromCollection).subscribe(this.collectionsInfos);
-    }   
+        const queryGetAllDocumentsFromCollection: Query<CollectionInfo> = query(this.getCollectionReference());
+        const allCollectionsInfos: Observable<Map<string, CollectionInfo>> = this.getCollectionsInfosFromQuery(queryGetAllDocumentsFromCollection);
+        allCollectionsInfos.subscribe(this.collectionsInfos);
+        return allCollectionsInfos;
+    }    
 
-    public getCollectionInfo(collectionName: string) : CollectionInfo {
-        
-        console.log('ppppppppppppp aaa', this.collectionsInfos.value);
-        console.log('ppppppppppppp 111', this.allCollectionsInfos);
-        console.log('ppppppppppppp 222', collectionName);
-
+    public getCollectionInfo(collectionName: string) : CollectionInfo {       
         if (!this.allCollectionsInfos.has(collectionName))
         {
-            console.log('ppppppppppppp 333');
             throw new Error(`La collection ${collectionName} non è gestita`);
         }
         return this.collectionsInfos.value.get(collectionName)!;

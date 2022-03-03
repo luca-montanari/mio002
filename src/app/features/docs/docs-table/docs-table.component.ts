@@ -20,7 +20,7 @@ import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collec
 export class DocsTableComponent implements OnInit, OnDestroy {
 
     // Colonne visualizzate in tabella
-    displayedColumns: string[] = ['select', 'code', 'description', 'category'];
+    displayedColumns: string[] = ['code', 'description', 'category'];
 
     // DataSource della tabella
     dataSource: DocsTableDataSource = new DocsTableDataSource();
