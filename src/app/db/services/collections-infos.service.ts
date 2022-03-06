@@ -2,12 +2,22 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, defer, map, Observable } from 'rxjs';
 
-import { collection, CollectionReference, doc, DocumentSnapshot, getDocs, onSnapshot, Query, query } from 'firebase/firestore';
+import { 
+    collection, 
+    CollectionReference, 
+    doc, 
+    getDocs, 
+    onSnapshot, 
+    Query, 
+    query, 
+    Unsubscribe 
+} from 'firebase/firestore';
 
 import { DbModule } from '../db.module';
 import { CollectionInfo } from '../models/shared/collectionsInfos/collection-info';
 import collectionInfoConverter from '../models/shared/collectionsInfos/collection-info.converter';
 import { InitFirebaseService } from './init-firebase.service';
+import { Counter } from '../models/shared/collectionsInfos/counter';
 
 export const COLLECTION_NAME_COLLECTIONSINFOS = 'collectionsInfos';
 
@@ -21,7 +31,9 @@ export class CollectionsInfosService {
      */
     private collectionsInfos = new BehaviorSubject<Map<string, CollectionInfo>>(new Map<string, CollectionInfo>());
 
-    private collectionsInfos$: Observable<Map<string, CollectionInfo>> = this.collectionsInfos.asObservable();
+    //private collectionsInfos$: Observable<Map<string, CollectionInfo>> = this.collectionsInfos.asObservable();
+
+    private list: CollectionInfo[] = [];
 
     /**
      * Costruttore
@@ -46,28 +58,28 @@ export class CollectionsInfosService {
 
     /**
      * Caricamento dei dati rimanendo il ascolto in realtime per una collection in particolare
-     * @param collectionName nome della collection di cui mettersi in ascolto delle modifiche al documento relativo
+     * @param collectionName - nome della collection di cui mettersi in ascolto delle modifiche al documento relativo
      */
     public attachAllCollectionsInfos(collectionName: string) {
-        const unsub = onSnapshot(
+        const unsubscribe: Unsubscribe = onSnapshot(
             doc(this.firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS, collectionName).withConverter(collectionInfoConverter), 
             { 
                 includeMetadataChanges: true 
             }, 
             documentSnapshot => {
                 const collectionInfo = documentSnapshot.data();
-                const allCollectionsInfos = this.collectionsInfos.value;
-                
+                this.allCollectionsInfos;                
             }
-        );
+        );        
     }
 
     /**
      * Restituisce il documento con le info generali della collection con il nome passato in input
-     * @param collectionName nome della collection di cui restituire il documento relativo con le info generali di collection
+     * @param collectionName - nome della collection di cui restituire il documento relativo con le info generali di collection
      * @returns ritorna il documento relativo con le info generali di collection 
      */
     public getCollectionInfo(collectionName: string) : CollectionInfo {
+        console.log('@@@', 'CollectionsInfosService', 'getCollectionInfo', collectionName);
         if (!this.allCollectionsInfos.has(collectionName)) {
             throw new Error(`La collection ${collectionName} non è gestita`);
         }
@@ -83,8 +95,8 @@ export class CollectionsInfosService {
 
     /**
      * Restituisce una observable per ottenere tutti i documenti della collection
-     * @param q query per ricavari tutti i documenti della collection
-     * @returns observable con i documenti di tutte le collection suddivisi per nome collection
+     * @param q - query per ricavari tutti i documenti della collection
+     * @returns - observable con i documenti di tutte le collection suddivisi per nome collection
      */
     private getCollectionsInfosFromQuery(timeStamp: Date, q: Query<CollectionInfo>): Observable<Map<string, CollectionInfo>> {
         return defer(() => getDocs(q))
@@ -94,7 +106,7 @@ export class CollectionsInfosService {
                     querySnapshot.forEach((queryDocumentSnapshot) => {                        
                         const collectionInfo: CollectionInfo = queryDocumentSnapshot.data();
                         collectionInfo.timeStamp = timeStamp;
-                        collectionsInfos.set(queryDocumentSnapshot.data().collectionName, queryDocumentSnapshot.data());
+                        collectionsInfos.set(queryDocumentSnapshot.data().collectionName, collectionInfo);
                     });
                     return collectionsInfos;
                 })
@@ -103,10 +115,23 @@ export class CollectionsInfosService {
 
     /**
      * Imposta il converter per tipizzare i dati letti dal database
-     * @returns 
+     * @returns riferimento alla collection con impostato il converter per tipizzare i dati restituiti dal database
      */
     private getCollectionReference(): CollectionReference<CollectionInfo> {
         return collection(this.firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS).withConverter(collectionInfoConverter);
+    }
+
+    private getCollectionInfoNew(collectionName: string): CollectionInfo {
+        const counter: Counter = {
+            name: '',
+            value: 0
+        };
+        
+        const collectionInfoNew: CollectionInfo = {
+            collectionName: collectionName,
+            counters
+        };
+        return collectionInfoNew;
     }
 
 }

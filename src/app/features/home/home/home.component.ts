@@ -9,8 +9,6 @@ import { LoadingService } from 'src/app/shared/services/loading.service';
 import { LoadingData } from 'src/app/shared/services/models/loadingData';
 import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collection-info';
 
-const loadingText1: string = 'Inizializzazione dell\'accesso al database...';
-
 @Component({
   selector: 'mio002-home',
   templateUrl: './home.component.html',
