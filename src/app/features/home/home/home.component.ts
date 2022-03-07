@@ -49,10 +49,7 @@ export class HomeComponent implements OnInit {
             if (typeof firebaseInitializedOrAllCollectionsInfos == 'boolean') {
                 console.log('@@@', 'HomeComponent', 'initDbPrivate', 'subscribe', 'firebase inizializzato');
             } else {
-                console.log('@@@', 'HomeComponent', 'initDbPrivate', 'subscribe', 'dati delle collection caricati');
-                for (let [key, value] of firebaseInitializedOrAllCollectionsInfos) {
-                    console.log('@@@', 'HomeComponent', 'initDbPrivate', 'subscribe', 'dati delle collection', key, value);                    
-                }    
+                console.log('@@@', 'HomeComponent', 'initDbPrivate', 'subscribe', 'dati delle collection caricati', firebaseInitializedOrAllCollectionsInfos);
             }
         });
     }
@@ -84,20 +81,5 @@ export class HomeComponent implements OnInit {
                     finalize(() => this.loadingService.hide())
                 );
     }
-
-    // private initCollectionsInfosServicePrivate(): Observable<Map<string, CollectionInfo>> {
-    //     console.log('@@@', 'HomeComponent', 'initCollectionsInfosServicePrivate');
-    //     return defer(
-    //         () => {
-    //             this.loadingService.show('Inizializzazione dati delle Collection...');
-    //             return this.collectionsInfosService.loadAllCollectionsInfos()
-    //                 .pipe(
-    //                     delay(1000),
-    //                 )
-    //         })
-    //         .pipe(
-    //             finalize(() => this.loadingService.hide())
-    //         );        
-    // }
 
 }

@@ -49,9 +49,9 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         console.log('@@@', 'DocsTableComponent', 'ngOnDestroy');
     }
 
-    public get collectionInfo(): CollectionInfo {
-        return this.collectionsInfosService.getCollectionInfo(COLLECTION_NAME_DOCS);
-    }
+    // public get collectionInfo(): CollectionInfo {
+    //     return this.collectionsInfosService.getCollectionInfo(COLLECTION_NAME_DOCS);
+    // }
 
     public createNewDoc() {
         console.log('@@@', 'DocsTableComponent', 'createNewDoc');
