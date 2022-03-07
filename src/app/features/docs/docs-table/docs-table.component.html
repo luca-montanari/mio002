@@ -39,4 +39,8 @@
 </table>
 
 <!-- Dati della collection -->
-<!-- <div style="margin: 30px">{{ collectionInfo | json }}</div> -->
+<div style="margin: 30px">
+    {{ collectionInfoRuntimeHandler?.collectionName }}
+    <br>{{ collectionInfoRuntimeHandler?.collectionInfo | json }}
+    <br>{{ collectionInfoRuntimeHandler?.timeStamp }}
+</div>

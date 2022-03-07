@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 import { concatMap } from 'rxjs';
 
@@ -11,6 +11,7 @@ import { DocsCreateUpdateDocDialogComponent } from '../docs-create-update-doc-di
 import { Doc } from 'src/app/db/models/docs/doc';
 import { CollectionsInfosService } from 'src/app/db/services/collections-infos.service';
 import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collection-info';
+import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectionsInfos/collection-info-runtime-handler';
 
 @Component({
     selector: 'mio002-docs-table',
@@ -19,6 +20,8 @@ import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collec
 })
 export class DocsTableComponent implements OnInit, OnDestroy {
 
+    @Input() collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | null = null;
+    
     // Colonne visualizzate in tabella
     displayedColumns: string[] = ['code', 'description', 'category'];
 

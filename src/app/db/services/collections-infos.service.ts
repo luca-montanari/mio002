@@ -89,6 +89,7 @@ export class CollectionsInfosService {
                 const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler = this.getCollectionInfoRuntimeHandlerByCollectionName(collectionName);
 
                 collectionInfoRuntimeHandler.collectionInfo = collectionInfo;
+                collectionInfoRuntimeHandler.timeStamp = new Date();
 
                 collectionInfoRuntimeHandler.realtimeConnection.next(collectionInfoRuntimeHandler);
 

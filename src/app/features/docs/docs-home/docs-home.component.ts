@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+
 import { Observable } from 'rxjs';
 
 import { CollectionsInfosService, COLLECTION_NAME_COLLECTIONSINFOS } from 'src/app/db/services/collections-infos.service';
@@ -13,7 +14,7 @@ import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectio
 })
 export class DocsHomeComponent implements OnInit {
 
-    private collectionInfoRuntimeHandler: Observable<CollectionInfoRuntimeHandler | null>;
+    public collectionInfoRuntimeHandler: Observable<CollectionInfoRuntimeHandler | null>;
 
     /**
      * Costruttore
@@ -32,12 +33,10 @@ export class DocsHomeComponent implements OnInit {
         console.log('@@@', 'DocsHomeComponent', 'ngOnInit');
         // Connessione in realtime al documento di CollectionInfo della collection COLLECTION_NAME_DOCS
         this.collectionsInfosService.attachCollectionInfo(COLLECTION_NAME_DOCS);
-        // Mi sottoscrivo ai cambiamenti del documento di CollectionInfo della collection COLLECTION_NAME_DOCS
-        this.collectionInfoRuntimeHandler.subscribe(zzz => {
-            console.log('ddddddddddddddddddddd', zzz)
-        });
+        // // Mi sottoscrivo ai cambiamenti del documento di CollectionInfo della collection COLLECTION_NAME_DOCS
+        // this.collectionInfoRuntimeHandler.subscribe(collectionInfoRuntimeHandler => {
+        //     console.log('@@@', 'DocsHomeComponent', 'ngOnInit', 'subscribe',  collectionInfoRuntimeHandler);
+        // });
     }
-
-
 
 }
