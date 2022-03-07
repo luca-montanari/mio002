@@ -55,10 +55,13 @@ export class CollectionsInfosService {
             console.log('@@@', 'CollectionsInfosService', 'loadAllCollectionsInfos', 'subscribe', allDocumentsExistings);
             const timeStamp: Date = new Date();
             allDocumentsExistings.forEach(collectionInfo => {
+                const realtimeConnection: BehaviorSubject<CollectionInfoRuntimeHandler | null> = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);
                 const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler = {
                     collectionName: collectionInfo.collectionName,
                     collectionInfo: collectionInfo,
-                    timeStamp: timeStamp
+                    timeStamp: timeStamp,
+                    realtimeConnection: realtimeConnection,
+                    realtimeConnection$: realtimeConnection.asObservable()
                 }
                 this.listOfAllCollectionInfoRuntimeHandler.push(collectionInfoRuntimeHandler);
             });            
@@ -78,62 +81,76 @@ export class CollectionsInfosService {
                 console.log('@@@', 'CollectionsInfosService', 'attachAllCollectionsInfos', 'onSnapshot');
                 // Dato restituito dal database e tipizzato
                 let collectionInfo = documentSnapshot.data();
-                // Per la collection con il nome passato in input esiste già un CollectionInfo sul database?
+
                 if (!collectionInfo) {
-                    // ... NO quindi ne inizializzo uno nuovo
-                    collectionInfo = this.getCollectionInfoNew(collectionName);
+                    throw new Error(`Non è presente nel database il documento CollectionInfo relativo alla Collection ${collectionName}`);
                 }
+
+                const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler = this.getCollectionInfoRuntimeHandlerByCollectionName(collectionName);
+
+                collectionInfoRuntimeHandler.collectionInfo = collectionInfo;
+
+                collectionInfoRuntimeHandler.realtimeConnection.next(collectionInfoRuntimeHandler);
+
+                // // Per la collection con il nome passato in input esiste già un CollectionInfo sul database?
+                // if (!collectionInfo) {
+                //     // ... NO quindi ne inizializzo uno nuovo
+                //     console.log('@@@', 'CollectionsInfosService', 'attachAllCollectionsInfos', 'onSnapshot', 'collectionInfo non presente su db');
+                //     collectionInfo = this.getCollectionInfoNew(collectionName);
+                // }
                 
-                let collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | null = this.getCollectionInfoRuntimeHandlerByCollectionName(collectionName);
-                let realtimeConnection: BehaviorSubject<CollectionInfoRuntimeHandler | null>;
-
-                if (this.isCollectionInfoStoredByCollectionName(collectionName)) {
-                     collectionInfoRuntimeHandler = {
-                        collectionName: collectionName,
-                        collectionInfo: collectionInfo,
-                        timeStamp: new Date()            
-                    };
-                    this.listOfAllCollectionInfoRuntimeHandler.push(collectionInfoRuntimeHandler);
-                    realtimeConnection = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);                    
-                    collectionInfoRuntimeHandler.realtimeConnection = realtimeConnection;
-                } else {
-                    collectionInfoRuntimeHandler!.collectionInfo = collectionInfo;
-                    if (!(collectionInfoRuntimeHandler!.realtimeConnection)) {
-                        realtimeConnection = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);
-                        collectionInfoRuntimeHandler!.realtimeConnection = realtimeConnection;
-                    } else {
-                        realtimeConnection = collectionInfoRuntimeHandler!.realtimeConnection;
-                    }
-                }                
-
-                realtimeConnection.next(collectionInfoRuntimeHandler);
+                // let collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | null = this.getCollectionInfoRuntimeHandlerByCollectionName(collectionName);
+                // let realtimeConnection: BehaviorSubject<CollectionInfoRuntimeHandler | null>;
+                // if (this.isCollectionInfoStoredByCollectionName(collectionName)) {
+                //      collectionInfoRuntimeHandler = {
+                //         collectionName: collectionName,
+                //         collectionInfo: collectionInfo,
+                //         timeStamp: new Date()            
+                //     };
+                //     this.listOfAllCollectionInfoRuntimeHandler.push(collectionInfoRuntimeHandler);
+                //     realtimeConnection = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);                    
+                //     collectionInfoRuntimeHandler.realtimeConnection = realtimeConnection;
+                // } else {
+                //     collectionInfoRuntimeHandler!.collectionInfo = collectionInfo;
+                //     if (!(collectionInfoRuntimeHandler!.realtimeConnection)) {
+                //         realtimeConnection = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);
+                //         collectionInfoRuntimeHandler!.realtimeConnection = realtimeConnection;
+                //     } else {
+                //         realtimeConnection = collectionInfoRuntimeHandler!.realtimeConnection;
+                //     }
+                // }                
+                // realtimeConnection.next(collectionInfoRuntimeHandler);
 
             }
         );        
     }
 
-    private isCollectionInfoStoredByCollectionName(collectionName: string): boolean {
-        const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
-        return !!collectionInfoRuntimeHandler;
+    public getCollectionInfoRuntimeHandlerByCollectionName(collectionName: string): CollectionInfoRuntimeHandler {
+        return this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase())!;
     }
 
-    private getCollectionInfoByCollectionName(collectionName: string): CollectionInfo | null {
-        const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
-        if (collectionInfoRuntimeHandler) {
-            return collectionInfoRuntimeHandler.collectionInfo;
-        } else {
-            return null;
-        }        
-    }
+    // private isCollectionInfoStoredByCollectionName(collectionName: string): boolean {
+    //     const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
+    //     return !!collectionInfoRuntimeHandler;
+    // }
 
-    private getCollectionInfoRuntimeHandlerByCollectionName(collectionName: string): CollectionInfoRuntimeHandler | null {
-        const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
-        if (collectionInfoRuntimeHandler) {
-            return collectionInfoRuntimeHandler;
-        } else {
-            return null;
-        }        
-    }
+    // private getCollectionInfoByCollectionNameSafe(collectionName: string): CollectionInfo | null {
+    //     const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
+    //     if (collectionInfoRuntimeHandler) {
+    //         return collectionInfoRuntimeHandler.collectionInfo;
+    //     } else {
+    //         return null;
+    //     }        
+    // }
+
+    // private getCollectionInfoRuntimeHandlerByCollectionNameSafe(collectionName: string): CollectionInfoRuntimeHandler | null {        
+    //     const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
+    //     if (collectionInfoRuntimeHandler) {
+    //         return collectionInfoRuntimeHandler;
+    //     } else {
+    //         return null;
+    //     }        
+    // }
 
     // /**
     //  * Restituisce il documento con le info generali della collection con il nome passato in input
@@ -182,23 +199,23 @@ export class CollectionsInfosService {
         return collection(this.firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS).withConverter(collectionInfoConverter);
     }
 
-    /**
-     * Crea un documento di info vuoto se la collection con il nome passato in input non ne aveva uno già salvato sul database
-     * @param collectionName - nome della collection del quale creare il documento di info
-     * @returns restituisce il documento di info vuoto creato
-     */
-    private getCollectionInfoNew(collectionName: string): CollectionInfo {
-        const counter: Counter = {
-            name: 'count',
-            value: 0
-        };
-        const counters: Counter[] = [];
-        counters.push(counter);
-        const collectionInfoNew: CollectionInfo = {
-            collectionName: collectionName,
-            counters
-        };
-        return collectionInfoNew;
-    }
+    // /**
+    //  * Crea un documento di info vuoto se la collection con il nome passato in input non ne aveva uno già salvato sul database
+    //  * @param collectionName - nome della collection del quale creare il documento di info
+    //  * @returns restituisce il documento di info vuoto creato
+    //  */
+    // private getCollectionInfoNew(collectionName: string): CollectionInfo {
+    //     const counter: Counter = {
+    //         name: 'count',
+    //         value: 0
+    //     };
+    //     const counters: Counter[] = [];
+    //     counters.push(counter);
+    //     const collectionInfoNew: CollectionInfo = {
+    //         collectionName: collectionName,
+    //         counters
+    //     };
+    //     return collectionInfoNew;
+    // }
 
 }
