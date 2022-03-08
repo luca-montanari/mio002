@@ -20,7 +20,7 @@ import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectio
 })
 export class DocsTableComponent implements OnInit, OnDestroy {
 
-    @Input() collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | null = null;
+    @Input() collectionInfoRuntimeHandler!: CollectionInfoRuntimeHandler;
     
     // Colonne visualizzate in tabella
     displayedColumns: string[] = ['code', 'description', 'category'];

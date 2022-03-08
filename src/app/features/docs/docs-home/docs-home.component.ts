@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
@@ -12,8 +12,11 @@ import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectio
     templateUrl: './docs-home.component.html',
     styleUrls: ['./docs-home.component.scss']
 })
-export class DocsHomeComponent implements OnInit {
+export class DocsHomeComponent implements OnInit, OnDestroy {
 
+    /**
+     * Collegamento realtime con il CollectionInfo di docs registrato nel database 
+     */
     public collectionInfoRuntimeHandler: Observable<CollectionInfoRuntimeHandler | null>;
 
     /**
@@ -25,7 +28,7 @@ export class DocsHomeComponent implements OnInit {
         // Riferimento all'observable per poter sottoscrivrersi alle modifiche realtime al documento di CollectionInfo della collection COLLECTION_NAME_DOCS
         this.collectionInfoRuntimeHandler = this.collectionsInfosService.getCollectionInfoRuntimeHandlerByCollectionName(COLLECTION_NAME_DOCS).realtimeConnection$;
     }
-    
+
     /**
      * ngOnInit
      */
@@ -33,10 +36,14 @@ export class DocsHomeComponent implements OnInit {
         console.log('@@@', 'DocsHomeComponent', 'ngOnInit');
         // Connessione in realtime al documento di CollectionInfo della collection COLLECTION_NAME_DOCS
         this.collectionsInfosService.attachCollectionInfo(COLLECTION_NAME_DOCS);
-        // // Mi sottoscrivo ai cambiamenti del documento di CollectionInfo della collection COLLECTION_NAME_DOCS
-        // this.collectionInfoRuntimeHandler.subscribe(collectionInfoRuntimeHandler => {
-        //     console.log('@@@', 'DocsHomeComponent', 'ngOnInit', 'subscribe',  collectionInfoRuntimeHandler);
-        // });
     }
 
+    /**
+     * ngOnDestroy
+     */
+    ngOnDestroy(): void {
+        console.log('@@@', 'DocsHomeComponent', 'ngOnDestroy');
+        //this.collectionInfoRuntimeHandler
+    }
+    
 }

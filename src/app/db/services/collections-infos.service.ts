@@ -27,9 +27,9 @@ export const COLLECTION_NAME_COLLECTIONSINFOS = 'collectionsInfos';
 })
 export class CollectionsInfosService {
 
-    // private collectionsInfos = new BehaviorSubject<Map<string, CollectionInfo>>(new Map<string, CollectionInfo>());
-    // private collectionsInfos$: Observable<Map<string, CollectionInfo>> = this.collectionsInfos.asObservable();
-    // private listOfAllCollectionsInfosByCollectionName: Map<string, CollectionInfo> = new Map<string, CollectionInfo>();
+    /**
+     * Lista di tutti gli oggetti di gestione dei CollectionInfo di tutte le collection gestire
+     */
     private listOfAllCollectionInfoRuntimeHandler: CollectionInfoRuntimeHandler[] = [];
 
     /**
@@ -81,97 +81,30 @@ export class CollectionsInfosService {
                 console.log('@@@', 'CollectionsInfosService', 'attachAllCollectionsInfos', 'onSnapshot');
                 // Dato restituito dal database e tipizzato
                 let collectionInfo = documentSnapshot.data();
-
+                // Si presume che nel database siano presenti i documenti di CollectionInfo per ogni collection da gestire
                 if (!collectionInfo) {
                     throw new Error(`Non è presente nel database il documento CollectionInfo relativo alla Collection ${collectionName}`);
                 }
-
+                // Ricava l'oggetto che permette la gestione del CollectionInfo
                 const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler = this.getCollectionInfoRuntimeHandlerByCollectionName(collectionName);
-
+                // Aggiornamento del CollectionInfo
                 collectionInfoRuntimeHandler.collectionInfo = collectionInfo;
+                // Aggiornamento del timestamp che indica il momento nel quale sul client ho ottenuto il CollectionInfo
                 collectionInfoRuntimeHandler.timeStamp = new Date();
-
-                collectionInfoRuntimeHandler.realtimeConnection.next(collectionInfoRuntimeHandler);
-
-                // // Per la collection con il nome passato in input esiste già un CollectionInfo sul database?
-                // if (!collectionInfo) {
-                //     // ... NO quindi ne inizializzo uno nuovo
-                //     console.log('@@@', 'CollectionsInfosService', 'attachAllCollectionsInfos', 'onSnapshot', 'collectionInfo non presente su db');
-                //     collectionInfo = this.getCollectionInfoNew(collectionName);
-                // }
-                
-                // let collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | null = this.getCollectionInfoRuntimeHandlerByCollectionName(collectionName);
-                // let realtimeConnection: BehaviorSubject<CollectionInfoRuntimeHandler | null>;
-                // if (this.isCollectionInfoStoredByCollectionName(collectionName)) {
-                //      collectionInfoRuntimeHandler = {
-                //         collectionName: collectionName,
-                //         collectionInfo: collectionInfo,
-                //         timeStamp: new Date()            
-                //     };
-                //     this.listOfAllCollectionInfoRuntimeHandler.push(collectionInfoRuntimeHandler);
-                //     realtimeConnection = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);                    
-                //     collectionInfoRuntimeHandler.realtimeConnection = realtimeConnection;
-                // } else {
-                //     collectionInfoRuntimeHandler!.collectionInfo = collectionInfo;
-                //     if (!(collectionInfoRuntimeHandler!.realtimeConnection)) {
-                //         realtimeConnection = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);
-                //         collectionInfoRuntimeHandler!.realtimeConnection = realtimeConnection;
-                //     } else {
-                //         realtimeConnection = collectionInfoRuntimeHandler!.realtimeConnection;
-                //     }
-                // }                
-                // realtimeConnection.next(collectionInfoRuntimeHandler);
-
+                // Emette il CollectionInfo aggiornato
+                collectionInfoRuntimeHandler.realtimeConnection.next(collectionInfoRuntimeHandler);              
             }
         );        
     }
 
+    /**
+     * Ottenere l'oggetto che permette la gestione del CollectionInfo della collection con il nome passato in input
+     * @param collectionName - nome della collection di cui ottenere la gestione del CollectionInfo
+     * @returns l'oggetto che permette la gestione del CollectionInfo della collection con il nome passato in input
+     */
     public getCollectionInfoRuntimeHandlerByCollectionName(collectionName: string): CollectionInfoRuntimeHandler {
         return this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase())!;
-    }
-
-    // private isCollectionInfoStoredByCollectionName(collectionName: string): boolean {
-    //     const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
-    //     return !!collectionInfoRuntimeHandler;
-    // }
-
-    // private getCollectionInfoByCollectionNameSafe(collectionName: string): CollectionInfo | null {
-    //     const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
-    //     if (collectionInfoRuntimeHandler) {
-    //         return collectionInfoRuntimeHandler.collectionInfo;
-    //     } else {
-    //         return null;
-    //     }        
-    // }
-
-    // private getCollectionInfoRuntimeHandlerByCollectionNameSafe(collectionName: string): CollectionInfoRuntimeHandler | null {        
-    //     const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler | undefined = this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase());
-    //     if (collectionInfoRuntimeHandler) {
-    //         return collectionInfoRuntimeHandler;
-    //     } else {
-    //         return null;
-    //     }        
-    // }
-
-    // /**
-    //  * Restituisce il documento con le info generali della collection con il nome passato in input
-    //  * @param collectionName - nome della collection di cui restituire il documento relativo con le info generali di collection
-    //  * @returns ritorna il documento relativo con le info generali di collection 
-    //  */
-    // public getCollectionInfo(collectionName: string) : CollectionInfo {
-    //     console.log('@@@', 'CollectionsInfosService', 'getCollectionInfo', collectionName);
-    //     if (!this.allCollectionsInfos.has(collectionName)) {
-    //         throw new Error(`La collection ${collectionName} non è gestita`);
-    //     }
-    //     return this.collectionsInfos.value.get(collectionName)!;
-    // }
-
-    // /**
-    //  * Wrapper per ottenere dallo store direttamente la lista dei documenti in formato Map
-    //  */
-    // private get allCollectionsInfos(): Map<string, CollectionInfo> {
-    //     return this.collectionsInfos.value;
-    // }
+    }   
 
     /**
      * Restituisce una observable per ottenere tutti i documenti della collection
@@ -199,24 +132,5 @@ export class CollectionsInfosService {
     private getCollectionReference(): CollectionReference<CollectionInfo> {
         return collection(this.firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS).withConverter(collectionInfoConverter);
     }
-
-    // /**
-    //  * Crea un documento di info vuoto se la collection con il nome passato in input non ne aveva uno già salvato sul database
-    //  * @param collectionName - nome della collection del quale creare il documento di info
-    //  * @returns restituisce il documento di info vuoto creato
-    //  */
-    // private getCollectionInfoNew(collectionName: string): CollectionInfo {
-    //     const counter: Counter = {
-    //         name: 'count',
-    //         value: 0
-    //     };
-    //     const counters: Counter[] = [];
-    //     counters.push(counter);
-    //     const collectionInfoNew: CollectionInfo = {
-    //         collectionName: collectionName,
-    //         counters
-    //     };
-    //     return collectionInfoNew;
-    // }
 
 }
