@@ -38,6 +38,7 @@ export class HomeComponent implements OnInit {
     private initDbPrivate() {
         console.log('@@@', 'HomeComponent', 'initDbPrivate');
         if (this.initFirebaseService.initialized) {
+            console.log('@@@', 'HomeComponent', 'initDbPrivate', 'connessione al database già eseguita', this.collectionsInfosService.getCopyOfListOfAllCollectionInfoRuntimeHandler());
             return;
         }                
         concat(

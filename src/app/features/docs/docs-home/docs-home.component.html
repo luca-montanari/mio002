@@ -1,5 +1,10 @@
 <ng-container *ngIf="(collectionInfoRuntimeHandler | async) as cirh; else loadingTemplate">
+    <h1>DOCS</h1>
+    <div>
+        <a [routerLink]="['']">ritorna al menu principale</a>
+    </div>
     <mio002-docs-table [collectionInfoRuntimeHandler]="cirh"></mio002-docs-table>
+    <mio002-docs-test [collectionInfoRuntimeHandler]="cirh"></mio002-docs-test>
 </ng-container>
 <ng-template #loadingTemplate let-text="text">
     <div>

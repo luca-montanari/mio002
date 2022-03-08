@@ -61,7 +61,8 @@ export class CollectionsInfosService {
                     collectionInfo: collectionInfo,
                     timeStamp: timeStamp,
                     realtimeConnection: realtimeConnection,
-                    realtimeConnection$: realtimeConnection.asObservable()
+                    realtimeConnection$: realtimeConnection.asObservable(),
+                    unsubscribeConnection: null
                 }
                 this.listOfAllCollectionInfoRuntimeHandler.push(collectionInfoRuntimeHandler);
             });            
@@ -93,8 +94,26 @@ export class CollectionsInfosService {
                 collectionInfoRuntimeHandler.timeStamp = new Date();
                 // Emette il CollectionInfo aggiornato
                 collectionInfoRuntimeHandler.realtimeConnection.next(collectionInfoRuntimeHandler);              
+                // Salva un riferimento alla sottoscrizione realtime in modo da poter interrompere il collegamento quando necessario
+                collectionInfoRuntimeHandler.unsubscribeConnection = unsubscribe;
+
             }
         );        
+    }
+
+    /**
+     * Disconnette la connessione realtime dalla collection con il nome passato in input
+     * @param collectionName - nome della collection da cui disconnettersi dal realtime
+     * @returns non restituisce nulla
+     */
+    public detachCollectionInfo(collectionName: string): void {
+        console.log('@@@', 'CollectionsInfosService', 'detachCollectionInfo');
+        const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler = this.getCollectionInfoRuntimeHandlerByCollectionName(collectionName);
+        if (!collectionInfoRuntimeHandler.unsubscribeConnection) {
+            console.log('@@@', 'CollectionsInfosService', 'detachCollectionInfo', 'la collection non risultava collegata in realtime');
+            return;
+        }
+        collectionInfoRuntimeHandler.unsubscribeConnection();
     }
 
     /**
@@ -105,6 +124,14 @@ export class CollectionsInfosService {
     public getCollectionInfoRuntimeHandlerByCollectionName(collectionName: string): CollectionInfoRuntimeHandler {
         return this.listOfAllCollectionInfoRuntimeHandler.find(currentCollectionInfoRuntimeHandler => currentCollectionInfoRuntimeHandler.collectionName.toLowerCase() === collectionName.toLowerCase())!;
     }   
+
+    /**
+     * Ottenere una copia della lista completa dei gestori di CollectionInfo di tutte le collection gestite
+     * @returns copia della lista completa dei gestori di CollectionInfo di tutte le collection gestite
+     */
+    public getCopyOfListOfAllCollectionInfoRuntimeHandler(): CollectionInfoRuntimeHandler[] {
+        return [ ...this.listOfAllCollectionInfoRuntimeHandler ];
+    }
 
     /**
      * Restituisce una observable per ottenere tutti i documenti della collection

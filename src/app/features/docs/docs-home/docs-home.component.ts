@@ -43,7 +43,8 @@ export class DocsHomeComponent implements OnInit, OnDestroy {
      */
     ngOnDestroy(): void {
         console.log('@@@', 'DocsHomeComponent', 'ngOnDestroy');
-        //this.collectionInfoRuntimeHandler
+        // Disconnessione del realtime dal documento di CollectionInfo della collection COLLECTION_NAME_DOCS
+        this.collectionsInfosService.detachCollectionInfo(COLLECTION_NAME_DOCS);
     }
     
 }
