@@ -7,12 +7,14 @@ import { DocsHomeComponent } from './docs-home/docs-home.component';
 import { DocsTableComponent } from './docs-table/docs-table.component';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { DocsCreateUpdateDocDialogComponent } from './docs-create-update-doc-dialog/docs-create-update-doc-dialog.component';
+import { DocsTestComponent } from './docs-test/docs-test.component';
 
 @NgModule({
   declarations: [
     DocsHomeComponent,
     DocsTableComponent,
-    DocsCreateUpdateDocDialogComponent
+    DocsCreateUpdateDocDialogComponent,
+    DocsTestComponent
   ],
   imports: [
     CommonModule,
