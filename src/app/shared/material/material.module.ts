@@ -11,6 +11,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @NgModule({
     declarations: [],
@@ -25,7 +26,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         MatDialogModule,
         MatFormFieldModule,
         MatInputModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        MatCheckboxModule
     ],
     exports: [
         MatToolbarModule,
@@ -37,7 +39,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         MatDialogModule,
         MatFormFieldModule,
         MatInputModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        MatCheckboxModule
     ]
 })
 export class MaterialModule { }

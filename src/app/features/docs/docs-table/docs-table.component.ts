@@ -2,6 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 import { concatMap } from 'rxjs';
 
+import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 
 import { COLLECTION_NAME_DOCS, DocsService } from 'src/app/db/services/docs.service';
@@ -20,22 +21,44 @@ import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectio
 })
 export class DocsTableComponent implements OnInit, OnDestroy {
 
+    // #region Variables
+
+    // #region Variables Public
+
     @Input() collectionInfoRuntimeHandler!: CollectionInfoRuntimeHandler;
-    
+
     // Colonne visualizzate in tabella
-    displayedColumns: string[] = ['code', 'description', 'category'];
+    displayedColumns: string[] = ['select', 'code', 'description', 'category'];
+
+    // Gestione delle selezioni dell'utente
+    selection = new SelectionModel<Doc>(true, []);
 
     // DataSource della tabella
     dataSource: DocsTableDataSource = new DocsTableDataSource();
 
+    // #endregion
+
+    // #endregion
+
+    // #region Component LifeCycle
+
+    /**
+     * Costruttore
+     * @param collectionsInfosService servizio per accesso ai CollectionInfo
+     * @param docsService - servizio per gestione della collection docs
+     * @param dialog - servizio per l'attivazione di dialog di anglur material
+     */
     constructor(private collectionsInfosService: CollectionsInfosService,
-                private docsService: DocsService,
-                private dialog: MatDialog) {
+        private docsService: DocsService,
+        private dialog: MatDialog) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
     }
 
+    /**
+     * ngOnInit
+     */
     ngOnInit(): void {
-        console.log('@@@', 'DocsTableComponent', 'ngOnInit');        
+        console.log('@@@', 'DocsTableComponent', 'ngOnInit');
         const orderByConditions: OrderByCondition[] = [];
         const orderByCondition: OrderByCondition = {
             fieldName: 'code',
@@ -45,18 +68,28 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         this.docsService.query(orderByConditions).subscribe(docs => {
             console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'query', 'subscribe', docs);
             this.dataSource.setData(docs);
-        });        
+        });
     }
 
+    /**
+     * ngOnDestroy
+     */
     ngOnDestroy(): void {
         console.log('@@@', 'DocsTableComponent', 'ngOnDestroy');
     }
 
-    // public get collectionInfo(): CollectionInfo {
-    //     return this.collectionsInfosService.getCollectionInfo(COLLECTION_NAME_DOCS);
-    // }
+    // #endregion
 
-    public createNewDoc() {
+    // #region Methods
+
+    // #region Methods Public
+
+    // #region Modifica dei dati del database
+
+    /**
+     * Creazione di un nuovo doc utilizzando il dialog di angular material
+     */
+    public createNewDoc(): void {
         console.log('@@@', 'DocsTableComponent', 'createNewDoc');
         const dialogConfig = new MatDialogConfig<DocsCreateUpdateDocDialogComponent>();
         dialogConfig.disableClose = true;
@@ -77,12 +110,48 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 this.createNewDocPrivate(docData);
             });
     }
-    
+
+    /**
+     * Eliminazione dei records selezionati
+     */
     public deleteSelectedDocs() {
         console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs');
     }
 
-    private createNewDocPrivate(docData: Partial<Doc>) {        
+    // #endregion
+
+    // #region Gestione dei doc selezionati dall'utente
+
+    /**
+     * Sono selezionati tutti i docs visibili nella pagina corrente?
+     * @returns restituisce true se sono selezionati tutti i docs visibili nella pagina corrente
+     */
+    isAllSelected() {
+        return this.selection.selected?.length == this.dataSource.getDataCount;
+    }
+
+    /**
+     * Determina lo stato del checkbox header della colonna di selezione
+     */
+    toggleAll(): void {
+        if (this.isAllSelected()) {
+            this.selection.clear();
+        } else {
+            this.selection.select(...this.lessons);
+        }
+    }
+
+    // #endregion
+
+    // #endregion
+
+    // #endregion
+
+
+
+
+
+    private createNewDocPrivate(docData: Partial<Doc>) {
         this.docsService.createNewDoc(docData)
             .pipe(
                 concatMap(documentReference => {
@@ -96,7 +165,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 }
                 const docs: Doc[] = this.dataSource.getData;
                 docs.push(newDoc);
-                this.dataSource.setData(docs);                
+                this.dataSource.setData(docs);
             });
 
     }

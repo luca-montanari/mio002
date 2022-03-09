@@ -5,32 +5,39 @@
     </button>
     <span>Docs</span>
     <span class="example-spacer"></span>
-    <button mat-icon-button class="example-icon favorite-icon" (click)="createNewDoc()"
-        matTooltip="Crea un nuovo documento">
+    <button mat-icon-button class="example-icon favorite-icon" (click)="createNewDoc()" matTooltip="Crea un nuovo documento">
         <mat-icon>fiber_new</mat-icon>
     </button>
-    <button mat-icon-button class="example-icon" (click)="deleteSelectedDocs()"
-        matTooltip="Elimina i documenti selezionati">
+    <button mat-icon-button class="example-icon" (click)="deleteSelectedDocs()" matTooltip="Elimina i documenti selezionati">
         <mat-icon>delete</mat-icon>
     </button>
 </mat-toolbar>
 
 <!-- Tabella -->
 <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+    <!-- Select -->
+    <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox [checked]="selection.hasValue() && isAllSelected()" [indeterminate]="selection.hasValue() && !isAllSelected()" (change)="toggleAll()"></mat-checkbox>
+        </th>
+        <td  mat-cell *matCellDef="let doc">
+            <mat-checkbox (change)="onLessonToggled(lesson)" [checked]="selection.isSelected(lesson)"></mat-checkbox>
+        </td>
+    </ng-container>
     <!-- Codice -->
     <ng-container matColumnDef="code">
-        <th mat-header-cell *matHeaderCellDef> Codice </th>
-        <td mat-cell *matCellDef="let doc"> {{doc.code}} </td>
+        <th mat-header-cell *matHeaderCellDef>Codice</th>
+        <td mat-cell *matCellDef="let doc">{{doc.code}}</td>
     </ng-container>
     <!-- Descrizione -->
     <ng-container matColumnDef="description">
-        <th mat-header-cell *matHeaderCellDef> Descrizione </th>
-        <td mat-cell *matCellDef="let doc"> {{doc.description}} </td>
+        <th mat-header-cell *matHeaderCellDef>Descrizione</th>
+        <td mat-cell *matCellDef="let doc">{{doc.description}}</td>
     </ng-container>
     <!-- Categoria -->
     <ng-container matColumnDef="category">
-        <th mat-header-cell *matHeaderCellDef> Categoria </th>
-        <td mat-cell *matCellDef="let doc"> {{doc.category}} </td>
+        <th mat-header-cell *matHeaderCellDef>Categoria</th>
+        <td mat-cell *matCellDef="let doc">{{doc.category}}</td>
     </ng-container>
     <!-- Testata -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
