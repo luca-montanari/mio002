@@ -33,6 +33,11 @@ export const COLLECTION_NAME_DOCS = 'docs';
 })
 export class DocsService {
     
+    // #region LifeCycle
+    
+    /**
+     * Costruttore
+     */
     constructor(private firebase: InitFirebaseService) {        
         console.log('@@@', 'DocsService', 'constructor');
     }
@@ -44,11 +49,24 @@ export class DocsService {
         return this.getDocsFromQuery(q);
     }
 
+    // #endregion
+
+    // #region Methods
+
+    // #region Methods Public
+
+    /**
+     * Prepara una query da eseguire sul database.
+     * La query non viene eseguita con la sola chiamata del metodo in quanto viene restituito un observable.
+     * @param orderByConditions condizioni di ordinamento da aggiungere alla query
+     * @returns restituisce un Observable con array di Doc
+     */
     public query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'query', orderByConditions);
         this.firebase.throwErrorIfNotInitialized();
         const collectionReference = this.getCollectionReference();
         const queryConstraints: QueryConstraint[] = [];
+        // Aggiunge le eventuali condizioni di ordinamento passate al metodo
         if (orderByConditions) {
             orderByConditions.forEach(orderByCondition => {
                 queryConstraints.push(orderBy(orderByCondition.fieldName, orderByCondition.orderByDirection));
@@ -57,6 +75,11 @@ export class DocsService {
         const q = query(collectionReference, ...queryConstraints);
         return this.getDocsFromQuery(q);
     }
+
+    // #endregion
+
+    // #endregion
+
 
     public createNewDoc(docData: Partial<Doc>) {                
         console.log('@@@', 'DocsService', 'createNewDoc', docData);                 

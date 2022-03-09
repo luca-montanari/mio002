@@ -116,6 +116,10 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public deleteSelectedDocs() {
         console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs');
+
+
+
+        
     }
 
     // #endregion
@@ -126,8 +130,16 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * Sono selezionati tutti i docs visibili nella pagina corrente?
      * @returns restituisce true se sono selezionati tutti i docs visibili nella pagina corrente
      */
-    isAllSelected() {
+    isAllSelected(): boolean {
         return this.selection.selected?.length == this.dataSource.getDataCount;
+    }
+
+    /**
+     * L'utente ha selezionato almeno un doc?
+     * @returns restitituisce true se l'utente ha selezionato almeno un doc
+     */
+    existsAtLeastOneSelection(): boolean {
+        return this.selection.selected?.length > 0;
     }
 
     /**
@@ -137,10 +149,19 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         if (this.isAllSelected()) {
             this.selection.clear();
         } else {
-            this.selection.select(...this.lessons);
+            this.selection.select(...this.dataSource.getData);
         }
     }
 
+    /**
+     * Gestisce la modifica dello stato di selezione di un documento di doc
+     * @param doc documento di doc per il quale è cambiato lo stato di selezione
+     */
+     toggleDoc(doc: Doc): void {
+        this.selection.toggle(doc);
+        console.log('xxxxxxxxxxxxxxxx', this.selection.selected);
+    }
+    
     // #endregion
 
     // #endregion

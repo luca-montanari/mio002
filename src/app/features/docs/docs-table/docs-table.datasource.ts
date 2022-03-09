@@ -35,7 +35,7 @@ export class DocsTableDataSource extends DataSource<Doc> {
 
     // #endregion
 
-    public get getData () {
+    public get getData(): Doc[] {
         return this.dataStream.value;
     }
 
