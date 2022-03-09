@@ -8,6 +8,7 @@ import { CollectionsInfosService } from 'src/app/db/services/collections-infos.s
 import { LoadingService } from 'src/app/shared/services/loading.service';
 import { LoadingData } from 'src/app/shared/services/models/loadingData';
 import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collection-info';
+import { DocsService } from 'src/app/db/services/docs.service';
 
 @Component({
   selector: 'mio002-home',
@@ -21,6 +22,7 @@ export class HomeComponent implements OnInit {
     constructor(private router: Router,
                 private initFirebaseService: InitFirebaseService,
                 private collectionsInfosService: CollectionsInfosService,
+                private docsService: DocsService,
                 private loadingService: LoadingService) {
         console.log('@@@', 'HomeComponent', 'constructor');                
     }
@@ -28,6 +30,11 @@ export class HomeComponent implements OnInit {
     ngOnInit(): void {
         console.log('@@@', 'HomeComponent', 'ngOnInit');
         this.initDbPrivate();
+
+        console.log('aaaaaaaaaaaa');
+        const aaa = this.docsService.getDocReference('DnYhAFwyakxRY7xHu489');
+        console.log('bbbbbbbbbbbb');
+
     }
         
     public openDocs() {        

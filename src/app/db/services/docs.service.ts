@@ -17,7 +17,9 @@ import {
     updateDoc,
     writeBatch,
     doc,
-    getDoc
+    getDoc,
+    deleteDoc,
+    DocumentSnapshot
 } from "firebase/firestore";
 
 import { DbModule } from '../db.module';
@@ -41,13 +43,6 @@ export class DocsService {
     constructor(private firebase: InitFirebaseService) {        
         console.log('@@@', 'DocsService', 'constructor');
     }
-    
-    public getAllDocs(): Observable<Doc[]> {
-        console.log('@@@', 'DocsService', 'getAllDocs');
-        this.firebase.throwErrorIfNotInitialized();
-        const q = query(this.getCollectionReference());
-        return this.getDocsFromQuery(q);
-    }
 
     // #endregion
 
@@ -56,9 +51,21 @@ export class DocsService {
     // #region Methods Public
 
     /**
+     * Prepara una query da eseguire sul database per ottenere tutti i documenti presenti nella collection.
+     * La query non viene eseguita con la sola chiamata del metodo in quanto viene restituito un observable che il chiamanete dovrà sottoscrivere.
+     * @returns restituisce un observable che restituisce l'array con tutti i documenti presenti nella collection
+     */
+    public getAllDocs(): Observable<Doc[]> {
+        console.log('@@@', 'DocsService', 'getAllDocs');
+        this.firebase.throwErrorIfNotInitialized();
+        const queryExecutor = query(this.getCollectionReference());
+        return this.getDocsFromQuery(queryExecutor);
+    }
+
+    /**
      * Prepara una query da eseguire sul database.
      * La query non viene eseguita con la sola chiamata del metodo in quanto viene restituito un observable.
-     * @param orderByConditions condizioni di ordinamento da aggiungere alla query
+     * @param orderByConditions - condizioni di ordinamento da aggiungere alla query
      * @returns restituisce un Observable con array di Doc
      */
     public query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
@@ -72,14 +79,62 @@ export class DocsService {
                 queryConstraints.push(orderBy(orderByCondition.fieldName, orderByCondition.orderByDirection));
             });
         }
-        const q = query(collectionReference, ...queryConstraints);
-        return this.getDocsFromQuery(q);
+        const queryExecutor = query(collectionReference, ...queryConstraints);
+        return this.getDocsFromQuery(queryExecutor);
+    }
+
+    /**
+     * Dato il riferimento ad un documento restituisce il documento tipizzato.
+     * Restituisce un observable quindi il chiamante si deve sottoscrivere.
+     * @param documentReference - riferimento al documento richiesto
+     * @returns restitituisce un observable che restituisce il documento richiesto tipizzato
+     */
+    public getDoc(documentReference: DocumentReference<Doc>): Observable<DocumentSnapshot<Doc>> {
+        console.log('@@@', 'DocsService', 'getDoc', documentReference);                 
+        this.firebase.throwErrorIfNotInitialized();
+        return defer(() => getDoc(documentReference));
+    }
+
+    /**
+     * Ottiene il riferimento ad un documento.
+     * Non esegue un interrogazione al database.
+     * @param id id del documento di cui ottenere il riferimento
+     * @returns restituisce il riferimento al documento
+     */
+    public getDocReference(id: string): DocumentReference<Doc> {
+        console.log('@@@', 'DocsService', 'getDocReference', id);                 
+        this.firebase.throwErrorIfNotInitialized();
+        return doc(this.firebase.firestore, COLLECTION_NAME_DOCS, id).withConverter(docConverter);        
+    }
+
+    // /**
+    //  * Elimina un documento dal database avendo in input il riferimento al documento
+    //  * @param documentReference riferimento al documento da rimuovere dal database
+    //  * @returns restituisce un observable che non ritorna risultati ma che si complta solo quando la cancellazione va a buon fine
+    //  */
+    // public deleteDoc(documentReference: DocumentReference<unknown>): Observable<void> {
+    //     console.log('@@@', 'DocsService', 'deleteDoc');
+    //     this.firebase.throwErrorIfNotInitialized();
+    //     return defer(() => deleteDoc(documentReference));
+    // }
+
+    /**
+     * Rimuove dal database la lista di documenti passata in input
+     * @param documents - lista di tutti i documenti tipizzati da rimuovere
+     */
+    public deleteDocsByDocuments(documents: Doc[]) {
+        console.log('@@@', 'DocsService', 'deleteDocsByDocuments');
+        this.firebase.throwErrorIfNotInitialized();
+        const batch = writeBatch(this.firebase.firestore);                
+        // Cicla su tutti i documenti da eliminare
+        for (const document of documents) {
+            batch.delete(this.getDocReference(document.id));
+        }
     }
 
     // #endregion
 
     // #endregion
-
 
     public createNewDoc(docData: Partial<Doc>) {                
         console.log('@@@', 'DocsService', 'createNewDoc', docData);                 
@@ -87,19 +142,13 @@ export class DocsService {
         return defer(() => this.addDocPrivate(docData));
     }
 
-    public getDoc(doc: DocumentReference<Doc>) {
-        console.log('@@@', 'DocsService', 'getDoc', doc);                 
-        this.firebase.throwErrorIfNotInitialized();
-        return defer(() => getDoc(doc));
-    }
-
     private async addDocPrivate(docData: Partial<Doc>) {
         docData.timestampClientAddDoc = Timestamp.now();
         let newDoc = doc(this.getCollectionReference());
         const batch = writeBatch(this.firebase.firestore);                
-        await batch.set<Partial<Doc>>(newDoc, docData);        
-        await batch.update<Partial<Doc>>(newDoc, { timestampServerAddDoc: serverTimestamp() });
-        await batch.commit();
+        batch.set<Partial<Doc>>(newDoc, docData);        
+        batch.update<Partial<Doc>>(newDoc, { timestampServerAddDoc: serverTimestamp() });
+        await batch.commit();        
         return newDoc;
     }
 

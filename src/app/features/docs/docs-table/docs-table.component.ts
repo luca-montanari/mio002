@@ -116,10 +116,10 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public deleteSelectedDocs() {
         console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs');
-
-
-
-        
+        if (!this.existsAtLeastOneSelection()) {
+            throw new Error('Non ci sono documenti selezionati da eliminare');
+        }
+        this.docsService.deleteDocsByDocuments(this.selection.selected);
     }
 
     // #endregion
