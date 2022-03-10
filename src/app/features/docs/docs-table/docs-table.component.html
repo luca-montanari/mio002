@@ -9,7 +9,7 @@
         <mat-icon>fiber_new</mat-icon>
     </button>
     <button mat-icon-button class="example-icon" (click)="deleteSelectedDocs()" [disabled]="!existsAtLeastOneSelection()">
-        <mat-icon matTooltip="Elimina i documenti selezionati">delete</mat-icon>
+        <mat-icon [matTooltip]="GetTooltipForButtonDeleteSelectedDocs()">delete</mat-icon>
     </button>
 </mat-toolbar>
 

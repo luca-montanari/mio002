@@ -107,16 +107,16 @@ export class DocsService {
         return doc(this.firebase.firestore, COLLECTION_NAME_DOCS, id).withConverter(docConverter);        
     }
 
-    // /**
-    //  * Elimina un documento dal database avendo in input il riferimento al documento
-    //  * @param documentReference riferimento al documento da rimuovere dal database
-    //  * @returns restituisce un observable che non ritorna risultati ma che si complta solo quando la cancellazione va a buon fine
-    //  */
-    // public deleteDoc(documentReference: DocumentReference<unknown>): Observable<void> {
-    //     console.log('@@@', 'DocsService', 'deleteDoc');
-    //     this.firebase.throwErrorIfNotInitialized();
-    //     return defer(() => deleteDoc(documentReference));
-    // }
+    /**
+     * Elimina un documento dal database avendo in input il riferimento al documento
+     * @param documentReference riferimento al documento da rimuovere dal database
+     * @returns restituisce un observable che non ritorna risultati ma che si complta solo quando la cancellazione va a buon fine
+     */
+    public deleteDoc(documentReference: DocumentReference<unknown>): Observable<void> {
+        console.log('@@@', 'DocsService', 'deleteDoc');
+        this.firebase.throwErrorIfNotInitialized();
+        return defer(() => deleteDoc(documentReference));
+    }
 
     /**
      * Rimuove dal database la lista di documenti passata in input
@@ -124,13 +124,53 @@ export class DocsService {
      */
     public deleteDocsByDocuments(documents: Doc[]) {
         console.log('@@@', 'DocsService', 'deleteDocsByDocuments');
+        // Verifica che il metodo sia utilizzabile
         this.firebase.throwErrorIfNotInitialized();
+        // Esegue l'eliminazione dei documenti
+        this.deleteDocsByDocumentsPrivate(documents);
+    }
+
+    // #endregion
+
+    // #region Methods Private
+
+    // #region Metodi che genera eccezioni
+
+    /**
+     * Verifica che il numero passato in input non sia superiore al numero di documenti che è possibile modificare in un batch
+     */
+    private checkMaximunDocumentsForBatch(count: number): void {
+        if (count > 500) {
+            throw new Error(`Non è possibile eseguire un batch che va a modificare più di 500 documenti (numero di documenti che si vogliono modificare: ${count})`);
+        };
+        return;
+    }
+
+    // #endregion
+
+    // #region Metodi che eseguono un qualsiasi aggiornamento della collection
+
+    /**
+     * Eliminazione di tutti i documenti 
+     * @param documents lista dei documenti tipizzati da eliminare
+     * @returns restituite una promise che si risolve solo se il commit va a buon fine
+     */
+    private async deleteDocsByDocumentsPrivate(documents: Doc[]): Promise<void> {
+        console.log('@@@', 'DocsService', 'deleteDocsByDocuments');
+        // Verifica che il metodo sia utilizzabile
+        this.firebase.throwErrorIfNotInitialized();
+        this.checkMaximunDocumentsForBatch(documents.length);
+        // Inizializza il batch
         const batch = writeBatch(this.firebase.firestore);                
         // Cicla su tutti i documenti da eliminare
         for (const document of documents) {
             batch.delete(this.getDocReference(document.id));
-        }
+        }        
+        // Commit delle cancellazioni
+        return await batch.commit();
     }
+
+    // #endregion
 
     // #endregion
 

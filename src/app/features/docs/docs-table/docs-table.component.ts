@@ -4,6 +4,7 @@ import { concatMap } from 'rxjs';
 
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
 
 import { COLLECTION_NAME_DOCS, DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
@@ -48,9 +49,10 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * @param docsService - servizio per gestione della collection docs
      * @param dialog - servizio per l'attivazione di dialog di anglur material
      */
-    constructor(private collectionsInfosService: CollectionsInfosService,
-        private docsService: DocsService,
-        private dialog: MatDialog) {
+    constructor(private _collectionsInfosService: CollectionsInfosService,
+                private _docsService: DocsService,
+                private _dialog: MatDialog,
+                private _snackBar: MatSnackBar) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
     }
 
@@ -65,7 +67,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
             orderByDirection: 'asc'
         };
         orderByConditions.push(orderByCondition);
-        this.docsService.query(orderByConditions).subscribe(docs => {
+        this._docsService.query(orderByConditions).subscribe(docs => {
             console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'query', 'subscribe', docs);
             this.dataSource.setData(docs);
         });
@@ -84,7 +86,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
     // #region Methods Public
 
-    // #region Modifica dei dati del database
+    // #region Metodi che eseguono un qualsiasi aggiornamento della collection
 
     /**
      * Creazione di un nuovo doc utilizzando il dialog di angular material
@@ -97,7 +99,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         dialogConfig.minWidth = "400px";
         dialogConfig.data = null;
         dialogConfig.closeOnNavigation = false;
-        const matDialogRef: MatDialogRef<DocsCreateUpdateDocDialogComponent, Partial<Doc>> = this.dialog.open<DocsCreateUpdateDocDialogComponent>(DocsCreateUpdateDocDialogComponent, dialogConfig);
+        const matDialogRef: MatDialogRef<DocsCreateUpdateDocDialogComponent, Partial<Doc>> = this._dialog.open<DocsCreateUpdateDocDialogComponent>(DocsCreateUpdateDocDialogComponent, dialogConfig);
         matDialogRef
             .afterClosed()
             .subscribe(docData => {
@@ -116,21 +118,32 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public deleteSelectedDocs() {
         console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs');
+        // Verifica che il comando sia utilizzabille
         if (!this.existsAtLeastOneSelection()) {
             throw new Error('Non ci sono documenti selezionati da eliminare');
         }
-        this.docsService.deleteDocsByDocuments(this.selection.selected);
+        // Richiede conferma all'utente prima di eliminare i documenti selezionati
+        let message: string = '';
+        if (this.selection.selected.length === 1) {
+            message = `il documento selezionato`;                
+        } else {
+            message = `i documenti ${this.selection.selected.length} selezionati`;
+        }
+        if (!this.AskConfirmationWithSnackBar(`Sei sicuro di voler eliminare ${message}?`)) {
+            return;
+        }
+        this._docsService.deleteDocsByDocuments(this.selection.selected);
     }
 
     // #endregion
 
-    // #region Gestione dei doc selezionati dall'utente
+    // #region Metodi per la gestione dei doc selezionati dall'utente
 
     /**
      * Sono selezionati tutti i docs visibili nella pagina corrente?
      * @returns restituisce true se sono selezionati tutti i docs visibili nella pagina corrente
      */
-    isAllSelected(): boolean {
+    public isAllSelected(): boolean {
         return this.selection.selected?.length == this.dataSource.getDataCount;
     }
 
@@ -138,14 +151,14 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * L'utente ha selezionato almeno un doc?
      * @returns restitituisce true se l'utente ha selezionato almeno un doc
      */
-    existsAtLeastOneSelection(): boolean {
+    public existsAtLeastOneSelection(): boolean {
         return this.selection.selected?.length > 0;
     }
 
     /**
      * Determina lo stato del checkbox header della colonna di selezione
      */
-    toggleAll(): void {
+    public toggleAll(): void {
         if (this.isAllSelected()) {
             this.selection.clear();
         } else {
@@ -157,12 +170,51 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * Gestisce la modifica dello stato di selezione di un documento di doc
      * @param doc documento di doc per il quale è cambiato lo stato di selezione
      */
-     toggleDoc(doc: Doc): void {
+    public toggleDoc(doc: Doc): void {
         this.selection.toggle(doc);
         console.log('xxxxxxxxxxxxxxxx', this.selection.selected);
     }
     
     // #endregion
+
+    // #region Metodi per la gestione dell'interfaccia utente
+
+    /**
+     * Costruisce il tooltip da mostrare per il pulsante che permette l'eliminazione di tutti i documenti selezionati
+     * @returns restituisce il tooltip da mostrare
+     */
+    public GetTooltipForButtonDeleteSelectedDocs(): string {
+        if (this.existsAtLeastOneSelection()) {
+            let message: string = '';
+            if (this.selection.selected.length === 1) {
+                message = `il documento selezionato`;                
+            } else {
+                message = `i documenti ${this.selection.selected.length} selezionati`;
+            }
+            return `Elimina ${message}`;
+        } else {
+            return 'Elimina i documenti selezionati (non utilizzabile perchè non ci sono documenti selezionati)';
+        }        
+    }
+
+    // #endregion
+
+    // #endregion
+
+    // #region Methods Private
+
+    /**
+     * Chiede una conferma all'utente utilizzando Angular Material SnackBar
+     * @param question - messaggio con la conferma da richiedere all'utente
+     * @returns restituisce true se l'utente conferma altrimenti false
+     */
+    private AskConfirmationWithSnackBar(question: string): boolean {
+        const matSnackBarConfig: MatSnackBarConfig = {
+            verticalPosition: 'top'
+        }
+        this._snackBar.open(question, 'bbbaaaaaaaaa', matSnackBarConfig);
+        return false;
+    }
 
     // #endregion
 
@@ -173,10 +225,10 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
 
     private createNewDocPrivate(docData: Partial<Doc>) {
-        this.docsService.createNewDoc(docData)
+        this._docsService.createNewDoc(docData)
             .pipe(
                 concatMap(documentReference => {
-                    return this.docsService.getDoc(documentReference);
+                    return this._docsService.getDoc(documentReference);
                 })
             )
             .subscribe(documentSnapshot => {

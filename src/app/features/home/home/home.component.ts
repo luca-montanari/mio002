@@ -18,25 +18,32 @@ import { DocsService } from 'src/app/db/services/docs.service';
 export class HomeComponent implements OnInit {
 
     public loading$: Observable<LoadingData> = this.loadingService.loading$;
-    
+
+    // #region Component LifeCycle
+
+    /**
+     * Costruttore
+     */
     constructor(private router: Router,
                 private initFirebaseService: InitFirebaseService,
                 private collectionsInfosService: CollectionsInfosService,
-                private docsService: DocsService,
                 private loadingService: LoadingService) {
         console.log('@@@', 'HomeComponent', 'constructor');                
     }
     
+    /**
+     * ngOnInit
+     */
     ngOnInit(): void {
         console.log('@@@', 'HomeComponent', 'ngOnInit');
+        // Inizializzazione dell'accesso a Firebase.
+        // Inizializzazione dell'accesso a Firestore.
+        // Legge tutti i CollectionInfo per ogni collection da gestire, questi documenti contengono i dati relativi alla gestione di ogni collection.
         this.initDbPrivate();
-
-        console.log('aaaaaaaaaaaa');
-        const aaa = this.docsService.getDocReference('DnYhAFwyakxRY7xHu489');
-        console.log('bbbbbbbbbbbb');
-
     }
-        
+     
+    // #endregion
+
     public openDocs() {        
         console.log('@@@', 'HomeComponent', 'openDocs');
         this.router.navigate(['/docs']);
