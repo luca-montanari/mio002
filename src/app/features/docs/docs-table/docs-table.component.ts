@@ -4,7 +4,7 @@ import { concatMap } from 'rxjs';
 
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarConfig, MatSnackBarRef } from '@angular/material/snack-bar';
 
 import { COLLECTION_NAME_DOCS, DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
@@ -14,6 +14,8 @@ import { Doc } from 'src/app/db/models/docs/doc';
 import { CollectionsInfosService } from 'src/app/db/services/collections-infos.service';
 import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collection-info';
 import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectionsInfos/collection-info-runtime-handler';
+import { DocsAskConfirmationSnackbarComponent } from '../docs-ask-confirmation-snackbar/docs-ask-confirmation-snackbar.component';
+import { DocsAskConfirmationSnackbarData } from '../docs-ask-confirmation-snackbar/docs-ask-confirmation-snackbar-data';
 
 @Component({
     selector: 'mio002-docs-table',
@@ -127,7 +129,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         if (this.selection.selected.length === 1) {
             message = `il documento selezionato`;                
         } else {
-            message = `i documenti ${this.selection.selected.length} selezionati`;
+            message = `i ${this.selection.selected.length} documenti selezionati`;
         }
         if (!this.AskConfirmationWithSnackBar(`Sei sicuro di voler eliminare ${message}?`)) {
             return;
@@ -172,7 +174,6 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public toggleDoc(doc: Doc): void {
         this.selection.toggle(doc);
-        console.log('xxxxxxxxxxxxxxxx', this.selection.selected);
     }
     
     // #endregion
@@ -209,10 +210,31 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * @returns restituisce true se l'utente conferma altrimenti false
      */
     private AskConfirmationWithSnackBar(question: string): boolean {
-        const matSnackBarConfig: MatSnackBarConfig = {
-            verticalPosition: 'top'
+        // Dati da passare allo SnackBar
+        const data: DocsAskConfirmationSnackbarData = {
+            question: question,
+            actionConfirmName: 'confirm',
+            actionConfirmLabel: 'Continua',
+            actionCancelName: 'cancel',
+            actionCancelLabel: 'Annulla',
         }
-        this._snackBar.open(question, 'bbbaaaaaaaaa', matSnackBarConfig);
+        // Configurazione dello SnackBar
+        const matSnackBarConfig: MatSnackBarConfig<DocsAskConfirmationSnackbarData> = {
+            announcementMessage: question,
+            verticalPosition: 'top',
+            data: data,
+            panelClass: 'test'
+        }
+        // Apre lo SnackBar
+
+        const matSnackBarRef = this._snackBar.open('aaa', 'sss');
+
+        //const matSnackBarRef: MatSnackBarRef<DocsAskConfirmationSnackbarComponent> = this._snackBar.openFromComponent(DocsAskConfirmationSnackbarComponent, matSnackBarConfig);
+        
+        // Si mette in ascolto degli eventi emessi dallo SnackBar
+        matSnackBarRef.afterDismissed().subscribe(matSnackBarDismiss => {            
+            console.log('sssssssssssss', matSnackBarDismiss);
+        });
         return false;
     }
 

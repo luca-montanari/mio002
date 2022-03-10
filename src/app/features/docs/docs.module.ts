@@ -8,13 +8,15 @@ import { DocsTableComponent } from './docs-table/docs-table.component';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { DocsCreateUpdateDocDialogComponent } from './docs-create-update-doc-dialog/docs-create-update-doc-dialog.component';
 import { DocsTestComponent } from './docs-test/docs-test.component';
+import { DocsAskConfirmationSnackbarComponent } from './docs-ask-confirmation-snackbar/docs-ask-confirmation-snackbar.component';
 
 @NgModule({
   declarations: [
     DocsHomeComponent,
     DocsTableComponent,
     DocsCreateUpdateDocDialogComponent,
-    DocsTestComponent
+    DocsTestComponent,
+    DocsAskConfirmationSnackbarComponent
   ],
   imports: [
     CommonModule,
