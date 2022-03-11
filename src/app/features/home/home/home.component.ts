@@ -89,7 +89,7 @@ export class HomeComponent implements OnInit {
                     this.loadingService.show('Inizializzazione dati delle Collection...');
                     return this.collectionsInfosService.loadAllCollectionsInfos()
                         .pipe(
-                            delay(1000),
+                            delay(500),
                         )
                 })
                 .pipe(

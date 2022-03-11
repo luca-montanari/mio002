@@ -31,4 +31,22 @@ export class DocsAskConfirmationSnackbarComponent implements OnInit {
 
     // #endregion
 
+    // #region Methods
+
+    // #region Methods Public
+
+    public confirm() {
+        console.log('@@@', 'DocsAskConfirmationSnackbarComponent', 'confirm');
+        this.matSnackBarRef.dismissWithAction();
+    }
+
+    public cancel() {
+        console.log('@@@', 'DocsAskConfirmationSnackbarComponent', 'confirm');
+        this.matSnackBarRef.dismiss();
+    }
+
+    // #endregion
+
+    // #endregion
+
 }

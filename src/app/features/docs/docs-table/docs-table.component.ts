@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
-import { concatMap } from 'rxjs';
+import { concatMap, map, Observable, of } from 'rxjs';
 
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
@@ -131,10 +131,13 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         } else {
             message = `i ${this.selection.selected.length} documenti selezionati`;
         }
-        if (!this.AskConfirmationWithSnackBar(`Sei sicuro di voler eliminare ${message}?`)) {
-            return;
-        }
-        this._docsService.deleteDocsByDocuments(this.selection.selected);
+        this.AskConfirmationWithSnackBar(`Sei sicuro di voler eliminare ${message}?`)
+            .subscribe(confirmed => {
+                console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs', 'AskConfirmationWithSnackBar', confirmed);
+                if (confirmed) {
+                    this._docsService.deleteDocsByDocuments(this.selection.selected);         
+                }
+            });        
     }
 
     // #endregion
@@ -209,7 +212,8 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * @param question - messaggio con la conferma da richiedere all'utente
      * @returns restituisce true se l'utente conferma altrimenti false
      */
-    private AskConfirmationWithSnackBar(question: string): boolean {
+    private AskConfirmationWithSnackBar(question: string): Observable<boolean> {
+        console.log('@@@', 'DocsTableComponent', 'AskConfirmationWithSnackBar');
         // Dati da passare allo SnackBar
         const data: DocsAskConfirmationSnackbarData = {
             question: question,
@@ -223,19 +227,13 @@ export class DocsTableComponent implements OnInit, OnDestroy {
             announcementMessage: question,
             verticalPosition: 'top',
             data: data,
-            panelClass: 'test'
+            panelClass: 'test',
+            duration: 10000
         }
         // Apre lo SnackBar
-
-        const matSnackBarRef = this._snackBar.open('aaa', 'sss');
-
-        //const matSnackBarRef: MatSnackBarRef<DocsAskConfirmationSnackbarComponent> = this._snackBar.openFromComponent(DocsAskConfirmationSnackbarComponent, matSnackBarConfig);
-        
+        const matSnackBarRef: MatSnackBarRef<DocsAskConfirmationSnackbarComponent> = this._snackBar.openFromComponent(DocsAskConfirmationSnackbarComponent, matSnackBarConfig);       
         // Si mette in ascolto degli eventi emessi dallo SnackBar
-        matSnackBarRef.afterDismissed().subscribe(matSnackBarDismiss => {            
-            console.log('sssssssssssss', matSnackBarDismiss);
-        });
-        return false;
+        return matSnackBarRef.afterDismissed().pipe(map(matSnackBarDismiss => matSnackBarDismiss.dismissedByAction));             
     }
 
     // #endregion

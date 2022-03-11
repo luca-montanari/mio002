@@ -3,7 +3,7 @@
         {{ matSnackBarData.question }}
     </div>
     <div>
-        <button mat-button>{{ matSnackBarData.actionConfirmLabel }}</button>
-        <button mat-button>{{ matSnackBarData.actionCancelLabel }}</button>    
+        <button mat-stroked-button color="warn" (click)="confirm()">{{ matSnackBarData.actionConfirmLabel }}</button>
+        <button mat-stroked-button color="accent" (click)="cancel()">{{ matSnackBarData.actionCancelLabel }}</button>    
     </div>
 </div>
