@@ -13,7 +13,7 @@ export class LoadingService {
 
     constructor() { }
 
-    public show(text: string) {
+    public show(text: string) {        
         this._loading.next(this.getData(text));
     }
 

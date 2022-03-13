@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
-import { concatMap, map, Observable, of } from 'rxjs';
+import { catchError, concatMap, delay, finalize, map, Observable, of } from 'rxjs';
 
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
@@ -16,6 +16,8 @@ import { CollectionInfo } from 'src/app/db/models/shared/collectionsInfos/collec
 import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectionsInfos/collection-info-runtime-handler';
 import { DocsAskConfirmationSnackbarComponent } from '../docs-ask-confirmation-snackbar/docs-ask-confirmation-snackbar.component';
 import { DocsAskConfirmationSnackbarData } from '../docs-ask-confirmation-snackbar/docs-ask-confirmation-snackbar-data';
+import { LoadingData } from 'src/app/shared/services/models/loadingData';
+import { LoadingService } from 'src/app/shared/services/loading.service';
 
 @Component({
     selector: 'mio002-docs-table',
@@ -28,16 +30,19 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
     // #region Variables Public
 
-    @Input() collectionInfoRuntimeHandler!: CollectionInfoRuntimeHandler;
+    @Input() public collectionInfoRuntimeHandler!: CollectionInfoRuntimeHandler;
 
     // Colonne visualizzate in tabella
-    displayedColumns: string[] = ['select', 'code', 'description', 'category'];
+    public displayedColumns: string[] = ['select', 'code', 'description', 'category'];
 
     // Gestione delle selezioni dell'utente
-    selection = new SelectionModel<Doc>(true, []);
+    public selection = new SelectionModel<Doc>(true, []);
 
     // DataSource della tabella
-    dataSource: DocsTableDataSource = new DocsTableDataSource();
+    public dataSource: DocsTableDataSource = new DocsTableDataSource();
+
+    // Flag per mostrare il progress spinner
+    public loading$: Observable<LoadingData> = this._loadingService.loading$;
 
     // #endregion
 
@@ -47,14 +52,14 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
     /**
      * Costruttore
-     * @param collectionsInfosService servizio per accesso ai CollectionInfo
-     * @param docsService - servizio per gestione della collection docs
-     * @param dialog - servizio per l'attivazione di dialog di anglur material
+     * @param _docsService - servizio per gestione della collection docs
+     * @param _dialog - servizio per l'attivazione di dialog di anglur material
+     * @param _snackBar - servizio che permette di mostrare SnackBar con messaggi o richieste di conferma
      */
-    constructor(private _collectionsInfosService: CollectionsInfosService,
-                private _docsService: DocsService,
-                private _dialog: MatDialog,
-                private _snackBar: MatSnackBar) {
+    constructor(private _docsService: DocsService,
+        private _dialog: MatDialog,
+        private _snackBar: MatSnackBar,
+        private _loadingService: LoadingService) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
     }
 
@@ -63,16 +68,33 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     ngOnInit(): void {
         console.log('@@@', 'DocsTableComponent', 'ngOnInit');
+        // Crea le condizioni di ordinamento da utilizzare nell'interrogazione
         const orderByConditions: OrderByCondition[] = [];
         const orderByCondition: OrderByCondition = {
             fieldName: 'code',
             orderByDirection: 'asc'
         };
         orderByConditions.push(orderByCondition);
-        this._docsService.query(orderByConditions).subscribe(docs => {
-            console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'query', 'subscribe', docs);
-            this.dataSource.setData(docs);
-        });
+        // Interroga il database per ricavare i dati da mostrare nella griglia
+        try {
+            this._loadingService.show('Caricamento dei dati in corso...');
+            this._docsService.query(orderByConditions)
+                .pipe(
+                    catchError(err => {
+                        this.showError(err);
+                        return of([]);
+                    }),
+                    delay(500),
+                    finalize(() => this._loadingService.hide())
+                )
+                .subscribe(docs => {
+                    console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'query', 'subscribe', docs);
+                    this.dataSource.setData(docs);
+                });
+        } catch (error) {
+            this.showError(error);
+            this._loadingService.hide()
+        }
     }
 
     /**
@@ -127,7 +149,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         // Richiede conferma all'utente prima di eliminare i documenti selezionati
         let message: string = '';
         if (this.selection.selected.length === 1) {
-            message = `il documento selezionato`;                
+            message = `il documento selezionato`;
         } else {
             message = `i ${this.selection.selected.length} documenti selezionati`;
         }
@@ -135,14 +157,14 @@ export class DocsTableComponent implements OnInit, OnDestroy {
             .subscribe(confirmed => {
                 console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocs', 'AskConfirmationWithSnackBar', confirmed);
                 if (confirmed) {
-                    this._docsService.deleteDocsByDocuments(this.selection.selected);         
+                    this.deleteSelectedDocsPrivate();
                 }
-            });        
+            });
     }
 
     // #endregion
 
-    // #region Metodi per la gestione dei doc selezionati dall'utente
+    // #region Metodi per la gestione dei documenti selezionati dall'utente
 
     /**
      * Sono selezionati tutti i docs visibili nella pagina corrente?
@@ -178,7 +200,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
     public toggleDoc(doc: Doc): void {
         this.selection.toggle(doc);
     }
-    
+
     // #endregion
 
     // #region Metodi per la gestione dell'interfaccia utente
@@ -191,14 +213,14 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         if (this.existsAtLeastOneSelection()) {
             let message: string = '';
             if (this.selection.selected.length === 1) {
-                message = `il documento selezionato`;                
+                message = `il documento selezionato`;
             } else {
                 message = `i documenti ${this.selection.selected.length} selezionati`;
             }
             return `Elimina ${message}`;
         } else {
             return 'Elimina i documenti selezionati (non utilizzabile perchè non ci sono documenti selezionati)';
-        }        
+        }
     }
 
     // #endregion
@@ -206,6 +228,69 @@ export class DocsTableComponent implements OnInit, OnDestroy {
     // #endregion
 
     // #region Methods Private
+
+    // #region Metodi che eseguono un qualsiasi aggiornamento della collection
+
+    /**
+     * Crea un nuovo documento
+     * @param docData - dati con cui create il documento
+     */
+    private createNewDocPrivate(docData: Partial<Doc>): void {
+        console.log('@@@', 'DocsTableComponent', 'createNewDocPrivate');
+        try {
+            this._loadingService.show('Creazione del nuovo documento in corso...');
+            this._docsService.createNewDoc(docData)
+                .pipe(
+                    concatMap(documentReference => {
+                        return this._docsService.getDoc(documentReference);
+                    }),
+                    delay(500),
+                    finalize(() => this._loadingService.hide())
+                )
+                .subscribe(documentSnapshot => {
+                    console.log('@@@', 'DocsTableComponent', 'createNewDocPrivate', 'subscribe', documentSnapshot);
+                    let newDoc: Doc | undefined = documentSnapshot.data();
+                    if (!newDoc) {
+                        throw new Error("La creazione del nuovo doc non è andata a buon fine");
+                    }
+                    const docs: Doc[] = this.dataSource.getData;
+                    docs.push(newDoc);
+                    this.dataSource.setData(docs);
+                });
+        } catch (error) {
+            this.showError(error);
+            this._loadingService.hide()
+        }
+    }
+
+    /**
+     * Elimina i documenti selezionati
+     */
+    private deleteSelectedDocsPrivate() {
+        console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocsPrivate');
+        try {
+            this._loadingService.show('Eliminazione dei documenti selezionati in corso...');
+            this._docsService.deleteDocsByDocuments(this.selection.selected)
+                .pipe(
+                    delay(500),
+                    catchError(err => {
+                        this.showError(err);
+                        return of(null);
+                    }),
+                    finalize(() => this._loadingService.hide())
+                )
+                .subscribe(() => {
+                    console.log('@@@', 'DocsTableComponent', 'deleteSelectedDocsPrivate', 'subscribe');
+                });
+        } catch (error) {
+            this.showError(error);
+            this._loadingService.hide()
+        }    
+    }
+
+    // #endregion
+
+    // #region Metodi per la gestione dell'interfaccia utente
 
     /**
      * Chiede una conferma all'utente utilizzando Angular Material SnackBar
@@ -231,36 +316,23 @@ export class DocsTableComponent implements OnInit, OnDestroy {
             duration: 10000
         }
         // Apre lo SnackBar
-        const matSnackBarRef: MatSnackBarRef<DocsAskConfirmationSnackbarComponent> = this._snackBar.openFromComponent(DocsAskConfirmationSnackbarComponent, matSnackBarConfig);       
+        const matSnackBarRef: MatSnackBarRef<DocsAskConfirmationSnackbarComponent> = this._snackBar.openFromComponent(DocsAskConfirmationSnackbarComponent, matSnackBarConfig);
         // Si mette in ascolto degli eventi emessi dallo SnackBar
-        return matSnackBarRef.afterDismissed().pipe(map(matSnackBarDismiss => matSnackBarDismiss.dismissedByAction));             
+        return matSnackBarRef.afterDismissed().pipe(map(matSnackBarDismiss => matSnackBarDismiss.dismissedByAction));
+    }
+
+    /**
+     * Mostra un messaggio di errore all'utente
+     */
+    private showError(err: any): void {
+        console.log('@@@', 'DocsTableComponent', 'showError', err);
+        this._snackBar.open(err, 'Chiudi')
     }
 
     // #endregion
 
     // #endregion
 
-
-
-
-
-    private createNewDocPrivate(docData: Partial<Doc>) {
-        this._docsService.createNewDoc(docData)
-            .pipe(
-                concatMap(documentReference => {
-                    return this._docsService.getDoc(documentReference);
-                })
-            )
-            .subscribe(documentSnapshot => {
-                let newDoc: Doc | undefined = documentSnapshot.data();
-                if (!newDoc) {
-                    throw new Error("La creazione del nuovo doc non è andata a buon fine");
-                }
-                const docs: Doc[] = this.dataSource.getData;
-                docs.push(newDoc);
-                this.dataSource.setData(docs);
-            });
-
-    }
+    // #endregion
 
 }

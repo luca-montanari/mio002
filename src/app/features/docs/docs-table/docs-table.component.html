@@ -1,3 +1,14 @@
+<!-- Progress Spinner -->
+<ng-container *ngIf="(loading$ | async) as loadingData; else loadingTemplate">
+    <ng-container *ngIf="loadingData.loading" [ngTemplateOutlet]="loadingTemplate" [ngTemplateOutletContext]="{text: loadingData.text}"></ng-container>
+</ng-container>
+<ng-template #loadingTemplate let-text="text">
+    <div>
+        <span>{{ text ?? "Attendere..." }}</span>
+        <mat-spinner></mat-spinner>    
+    </div>
+</ng-template>
+
 <!-- Toolbar -->
 <mat-toolbar color="primary">
     <button mat-icon-button class="example-icon">

@@ -50,6 +50,8 @@ export class DocsService {
 
     // #region Methods Public
 
+    // #region Metodi che eseguono letture dal database
+
     /**
      * Prepara una query da eseguire sul database per ottenere tutti i documenti presenti nella collection.
      * La query non viene eseguita con la sola chiamata del metodo in quanto viene restituito un observable che il chiamanete dovrà sottoscrivere.
@@ -107,6 +109,21 @@ export class DocsService {
         return doc(this.firebase.firestore, COLLECTION_NAME_DOCS, id).withConverter(docConverter);        
     }
 
+    // #endregion
+
+    // #region Metodi che eseguono un qualsiasi aggiornamento della collection
+
+    /**
+     * Prepara il comando a cui sottoscriversi per creare un nuvo documento e per ottemere un riferimento al documento creato
+     * @param docData dati con cui creare il nuovo documento
+     * @returns restituisce un observable a cui sottoscriversi per generare il nuovo documento e per ottenere un riferimento al documento creato
+     */
+    public createNewDoc(docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
+        console.log('@@@', 'DocsService', 'createNewDoc', docData);
+        this.firebase.throwErrorIfNotInitialized();
+        return defer(() => this.createNewDocPrivate(docData));
+    }
+
     /**
      * Elimina un documento dal database avendo in input il riferimento al documento
      * @param documentReference riferimento al documento da rimuovere dal database
@@ -122,13 +139,15 @@ export class DocsService {
      * Rimuove dal database la lista di documenti passata in input
      * @param documents - lista di tutti i documenti tipizzati da rimuovere
      */
-    public deleteDocsByDocuments(documents: Doc[]) {
+    public deleteDocsByDocuments(documents: Doc[]): Observable<void> {
         console.log('@@@', 'DocsService', 'deleteDocsByDocuments');
         // Verifica che il metodo sia utilizzabile
         this.firebase.throwErrorIfNotInitialized();
         // Esegue l'eliminazione dei documenti
-        this.deleteDocsByDocumentsPrivate(documents);
+        return from(this.deleteDocsByDocumentsPrivate(documents));
     }
+
+    // #endregion
 
     // #endregion
 
@@ -148,7 +167,45 @@ export class DocsService {
 
     // #endregion
 
+    // #region Metodi che eseguono letture dal database
+
+    /**
+     * Ritorna un observable per eseguire una query sul database e restituire dati tipizzati
+     * @param q query costruita per interrogare il database ed ottenere i dati voluti
+     * @returns restituisce un observable a cui il chiamante deve sottoscriversi per eseguire effettivamente l'interrogazione al database
+     */
+    private getDocsFromQuery(q: Query<Doc>): Observable<Doc[]> {
+        return defer(() => getDocs(q))
+            .pipe(                
+                map(querySnapshot => {
+                    const docs: Doc[] = [];
+                    querySnapshot.forEach((queryDocumentSnapshot) => {                        
+                        docs.push(queryDocumentSnapshot.data());
+                    });
+                    return docs;
+                })
+            );        
+    }
+
+    // #endregion
+
     // #region Metodi che eseguono un qualsiasi aggiornamento della collection
+
+    /**
+     * Crea un nuovo documento nella collection
+     * @param docData dati con cui creare il documento
+     * @returns restituisce una promise che permette di ottenere il rifermento al documento
+     */
+    private async createNewDocPrivate(docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
+        console.log('@@@', 'DocsService', 'createNewDocPrivate', docData);
+        docData.timestampClientAddDoc = Timestamp.now();
+        let newDoc = doc(this.getCollectionReference());
+        const batch = writeBatch(this.firebase.firestore);                
+        batch.set<Partial<Doc>>(newDoc, docData);        
+        batch.update<Partial<Doc>>(newDoc, { timestampServerAddDoc: serverTimestamp() });
+        await batch.commit();        
+        return newDoc;
+    } 
 
     /**
      * Eliminazione di tutti i documenti 
@@ -165,6 +222,7 @@ export class DocsService {
         // Cicla su tutti i documenti da eliminare
         for (const document of documents) {
             batch.delete(this.getDocReference(document.id));
+            throw new Error('dddddddddddddd');
         }        
         // Commit delle cancellazioni
         return await batch.commit();
@@ -172,41 +230,20 @@ export class DocsService {
 
     // #endregion
 
-    // #endregion
+    // #region Metodi che gestiscono la tipizzazione dei dati ottenuti o scritti sul database
 
-    // #endregion
-
-    public createNewDoc(docData: Partial<Doc>) {                
-        console.log('@@@', 'DocsService', 'createNewDoc', docData);                 
-        this.firebase.throwErrorIfNotInitialized();
-        return defer(() => this.addDocPrivate(docData));
-    }
-
-    private async addDocPrivate(docData: Partial<Doc>) {
-        docData.timestampClientAddDoc = Timestamp.now();
-        let newDoc = doc(this.getCollectionReference());
-        const batch = writeBatch(this.firebase.firestore);                
-        batch.set<Partial<Doc>>(newDoc, docData);        
-        batch.update<Partial<Doc>>(newDoc, { timestampServerAddDoc: serverTimestamp() });
-        await batch.commit();        
-        return newDoc;
-    }
-
-    private getDocsFromQuery(q: Query<Doc>): Observable<Doc[]> {
-        return defer(() => getDocs(q))
-            .pipe(                
-                map(querySnapshot => {
-                    const docs: Doc[] = [];
-                    querySnapshot.forEach((queryDocumentSnapshot) => {                        
-                        docs.push(queryDocumentSnapshot.data());
-                    });
-                    return docs;
-                })
-            );        
-    }
-
+    /**
+     * Ottiene un riferimento alla collection tipizzato
+     * @returns restituisce un riferimento alla collection docs tipizzato con il converter
+     */
     private getCollectionReference(): CollectionReference<Doc> {
         return collection(this.firebase.firestore, COLLECTION_NAME_DOCS).withConverter(docConverter);
     }
 
+    // #endregion
+
+    // #endregion
+
+    // #endregion
+    
 }
