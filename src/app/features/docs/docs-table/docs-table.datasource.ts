@@ -23,12 +23,21 @@ export class DocsTableDataSource extends DataSource<Doc> {
 
     // #region DataSource
 
-    connect(): Observable<Doc[]> {
+    /**
+     * Caricamento dei dati nella griglia.
+     * Scatta ogni volta che l'observable restituita emette un valore.
+     * @returns observable con array di documenti mostrati in griglia
+     */
+    public connect(): Observable<Doc[]> {
         console.log('@@@', 'DocsDataSource', 'connect');
         return this.dataStream;
     }
 
-    disconnect() {
+    /**
+     * Disconnessione dalla sorgente di dati.
+     * Serve per rilasciare le risorse una volta che viene distrutto il componente che contiene la tabella
+     */
+    public disconnect(): void {
         console.log('@@@', 'DocsDataSource', 'disconnect');
         this.dataStream.complete();
     }

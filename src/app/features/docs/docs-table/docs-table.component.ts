@@ -225,6 +225,8 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
     // #endregion
 
+
+    
     // #endregion
 
     // #region Methods Private
