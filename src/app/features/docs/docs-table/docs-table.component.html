@@ -53,7 +53,7 @@
     <!-- Testata -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <!-- Righe -->
-    <tr mat-row (click)="" *matRowDef="let doc; columns: displayedColumns;"></tr>
+    <tr mat-row (dblclick)="doubleClickOnTableRow($event, doc)" *matRowDef="let doc; columns: displayedColumns;"></tr>
 </table>
 
 <!-- Dati della collection -->

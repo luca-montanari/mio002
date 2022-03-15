@@ -7,4 +7,6 @@ export interface Doc {
     category?: string;
     timestampClientAddDoc: Timestamp;
     timestampServerAddDoc: Timestamp;
+    timestampClientUpdateDoc: Timestamp;
+    timestampServerUpdateDoc: Timestamp;
 }

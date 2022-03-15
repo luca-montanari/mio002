@@ -117,24 +117,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public createNewDoc(): void {
         console.log('@@@', 'DocsTableComponent', 'createNewDoc');
-        const dialogConfig = new MatDialogConfig<DocsCreateUpdateDocDialogComponent>();
-        dialogConfig.disableClose = true;
-        dialogConfig.autoFocus = true;
-        dialogConfig.minWidth = "400px";
-        dialogConfig.data = null;
-        dialogConfig.closeOnNavigation = false;
-        const matDialogRef: MatDialogRef<DocsCreateUpdateDocDialogComponent, Partial<Doc>> = this._dialog.open<DocsCreateUpdateDocDialogComponent>(DocsCreateUpdateDocDialogComponent, dialogConfig);
-        matDialogRef
-            .afterClosed()
-            .subscribe(docData => {
-                console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', docData);
-                if (!docData) {
-                    console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog annullando la modifica');
-                    return;
-                }
-                console.log('@@@', 'DocsTableComponent', 'createNewDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog confermando la modifica');
-                this.createNewDocPrivate(docData);
-            });
+      
     }
 
     /**
@@ -225,13 +208,61 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
     // #endregion
 
+    // #region Metodi per la gestione degli eventi generati nella griglia
 
+    /**
+     * Evento generato da un doppio click su una riga della tabella
+     * @param event dati che descrivono l'evento di doppio click generato
+     * @param doc documento sul quale è styato eseguito il doppio click
+     */
+    public doubleClickOnTableRow(event: MouseEvent, doc: Doc): void {
+        console.log('@@@', 'DocsTableComponent', 'doubleClickOnTableRow', event, doc);
+        
+
+        
+
+    }
+
+    // #endregion
     
     // #endregion
 
     // #region Methods Private
 
     // #region Metodi che eseguono un qualsiasi aggiornamento della collection
+
+    /**
+     * Mostra l'interfaccia utente che permette all'utente di creare un nuovo documento o aggiornare un documento esistente
+     * @param docToBeUpdated documento da aggiornare nel caso si esegua il metodo per l'aggiornamento di un documento. Se si esegue il metodo per la creazione di un nuovo documento questo parametro sara null.
+     */
+    private createOrUpdateDoc(docToBeUpdated: Doc): void {
+        console.log('@@@', 'DocsTableComponent', 'createOrUpdateDoc', docToBeUpdated);
+        const dialogConfig = new MatDialogConfig<Doc>();
+        dialogConfig.disableClose = true;
+        dialogConfig.autoFocus = true;
+        dialogConfig.minWidth = "400px";
+        dialogConfig.data = docToBeUpdated;
+        dialogConfig.closeOnNavigation = false;
+        const matDialogRef: MatDialogRef<DocsCreateUpdateDocDialogComponent, Partial<Doc>> = this._dialog.open<DocsCreateUpdateDocDialogComponent>(DocsCreateUpdateDocDialogComponent, dialogConfig);
+        matDialogRef
+            .afterClosed()
+            .subscribe(docData => {
+                console.log('@@@', 'DocsTableComponent', 'createOrUpdateDoc', 'matDialogRef', 'subscribe', docData);
+                if (!docData) {
+                    console.log('@@@', 'DocsTableComponent', 'createOrUpdateDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog annullando la modifica');
+                    return;
+                }
+                console.log('@@@', 'DocsTableComponent', 'createOrUpdateDoc', 'matDialogRef', 'subscribe', 'chiuso il dialog confermando la modifica');
+                // In input non è stato passato un documento? 
+                if (!docToBeUpdated) {
+                    // ... NO siamo in fase di creazione di un nuovo documento
+                    this.createNewDocPrivate(docData);
+                } else {
+                    // ... SI siamo in fase di aggiornamento di un documento esistente                    
+                    
+                }                
+            });
+    }
 
     /**
      * Crea un nuovo documento
