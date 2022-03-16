@@ -115,8 +115,8 @@ export class DocsTableComponent implements OnInit, OnDestroy {
     /**
      * Creazione di un nuovo doc utilizzando il dialog di angular material
      */
-    public createNewDoc(): void {
-        console.log('@@@', 'DocsTableComponent', 'createNewDoc');
+    public AddDoc(): void {
+        console.log('@@@', 'DocsTableComponent', 'AddDoc');
       
     }
 
@@ -256,7 +256,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 // In input non è stato passato un documento? 
                 if (!docToBeUpdated) {
                     // ... NO siamo in fase di creazione di un nuovo documento
-                    this.createNewDocPrivate(docData);
+                    this.AddDocPrivate(docData);
                 } else {
                     // ... SI siamo in fase di aggiornamento di un documento esistente                    
                     
@@ -268,11 +268,11 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * Crea un nuovo documento
      * @param docData - dati con cui create il documento
      */
-    private createNewDocPrivate(docData: Partial<Doc>): void {
-        console.log('@@@', 'DocsTableComponent', 'createNewDocPrivate');
+    private AddDocPrivate(docData: Partial<Doc>): void {
+        console.log('@@@', 'DocsTableComponent', 'AddDocPrivate');
         try {
             this._loadingService.show('Creazione del nuovo documento in corso...');
-            this._docsService.createNewDoc(docData)
+            this._docsService.AddDoc(docData)
                 .pipe(
                     concatMap(documentReference => {
                         return this._docsService.getDoc(documentReference);
@@ -281,7 +281,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                     finalize(() => this._loadingService.hide())
                 )
                 .subscribe(documentSnapshot => {
-                    console.log('@@@', 'DocsTableComponent', 'createNewDocPrivate', 'subscribe', documentSnapshot);
+                    console.log('@@@', 'DocsTableComponent', 'AddDocPrivate', 'subscribe', documentSnapshot);
                     let newDoc: Doc | undefined = documentSnapshot.data();
                     if (!newDoc) {
                         throw new Error("La creazione del nuovo doc non è andata a buon fine");

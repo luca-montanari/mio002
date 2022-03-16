@@ -118,10 +118,10 @@ export class DocsService {
      * @param docData dati con cui creare il nuovo documento
      * @returns restituisce un observable a cui sottoscriversi per generare il nuovo documento e per ottenere un riferimento al documento creato
      */
-    public createNewDoc(docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
-        console.log('@@@', 'DocsService', 'createNewDoc', docData);
+    public AddDoc(docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
+        console.log('@@@', 'DocsService', 'AddDoc', docData);
         this.firebase.throwErrorIfNotInitialized();
-        return defer(() => this.createNewDocPrivate(docData));
+        return defer(() => this.AddDocPrivate(docData));
     }
 
     /**
@@ -196,8 +196,8 @@ export class DocsService {
      * @param docData dati con cui creare il documento
      * @returns restituisce una promise che permette di ottenere il rifermento al documento
      */
-    private async createNewDocPrivate(docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
-        console.log('@@@', 'DocsService', 'createNewDocPrivate', docData);
+    private async AddDocPrivate(docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
+        console.log('@@@', 'DocsService', 'AddDocPrivate', docData);
         docData.timestampClientAddDoc = Timestamp.now();
         let newDoc = doc(this.getCollectionReference());
         const batch = writeBatch(this.firebase.firestore);                
@@ -207,7 +207,17 @@ export class DocsService {
         return newDoc;
     } 
 
-    
+    private async UpdateDocPrivate(id: string, docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
+        console.log('@@@', 'DocsService', 'UpdateDocPrivate', docData);
+        // Timestamp dell'aggiornamento del documento lato client
+        docData.timestampClientUpdateDoc = Timestamp.now();        
+        // Riferimento al documento da aggiornare
+        const docToBeUpdated = this.getDocReference(id);
+        // Aggiornamento del documento
+        await updateDoc<Partial<Doc>>(docToBeUpdated, docData, { timestampServerAddDoc: serverTimestamp() });
+        // Restituisce il rifermento al documento
+        return docToBeUpdated;
+    }
 
     /**
      * Eliminazione di tutti i documenti 
@@ -223,8 +233,7 @@ export class DocsService {
         const batch = writeBatch(this.firebase.firestore);                
         // Cicla su tutti i documenti da eliminare
         for (const document of documents) {
-            batch.delete(this.getDocReference(document.id));
-            throw new Error('dddddddddddddd');
+            batch.delete(this.getDocReference(document.id));            
         }        
         // Commit delle cancellazioni
         return await batch.commit();
