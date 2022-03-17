@@ -52,9 +52,9 @@ export class DocsCreateUpdateDocDialogComponent {
         this.mode = this.doc ? 'update' : 'create';
         // Configurazione del reactive form
         this.formGroup = this.formBuilder.group({
-            code: ['', Validators.required],
-            description: ['', Validators.required],
-            category: ['', Validators.required],
+            code: [doc?.code ?? '', Validators.required],
+            description: [doc?.description ?? '', Validators.required],
+            category: [doc?.category ?? '', Validators.required],
         });
     }
 

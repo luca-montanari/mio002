@@ -118,10 +118,16 @@ export class DocsService {
      * @param docData dati con cui creare il nuovo documento
      * @returns restituisce un observable a cui sottoscriversi per generare il nuovo documento e per ottenere un riferimento al documento creato
      */
-    public AddDoc(docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
-        console.log('@@@', 'DocsService', 'AddDoc', docData);
+    public addDoc(docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
+        console.log('@@@', 'DocsService', 'addDoc', docData);
         this.firebase.throwErrorIfNotInitialized();
         return defer(() => this.AddDocPrivate(docData));
+    }
+
+    public updateDoc(id: string, docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
+        console.log('@@@', 'DocsService', 'updateDoc', id, docData);
+        this.firebase.throwErrorIfNotInitialized();
+        return defer(() => this.UpdateDocPrivate(id, docData));
     }
 
     /**
@@ -214,7 +220,7 @@ export class DocsService {
         // Riferimento al documento da aggiornare
         const docToBeUpdated = this.getDocReference(id);
         // Aggiornamento del documento
-        await updateDoc<Partial<Doc>>(docToBeUpdated, docData, { timestampServerAddDoc: serverTimestamp() });
+        await updateDoc<Partial<Doc>>(docToBeUpdated, { ...docData, timestampServerAddDoc: serverTimestamp() });
         // Restituisce il rifermento al documento
         return docToBeUpdated;
     }

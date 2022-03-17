@@ -115,9 +115,9 @@ export class DocsTableComponent implements OnInit, OnDestroy {
     /**
      * Creazione di un nuovo doc utilizzando il dialog di angular material
      */
-    public AddDoc(): void {
-        console.log('@@@', 'DocsTableComponent', 'AddDoc');
-      
+    public addDoc(): void {
+        console.log('@@@', 'DocsTableComponent', 'addDoc');
+        this.createOrUpdateDoc(null);
     }
 
     /**
@@ -217,10 +217,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public doubleClickOnTableRow(event: MouseEvent, doc: Doc): void {
         console.log('@@@', 'DocsTableComponent', 'doubleClickOnTableRow', event, doc);
-        
-
-        
-
+        this.createOrUpdateDoc(doc);
     }
 
     // #endregion
@@ -235,7 +232,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * Mostra l'interfaccia utente che permette all'utente di creare un nuovo documento o aggiornare un documento esistente
      * @param docToBeUpdated documento da aggiornare nel caso si esegua il metodo per l'aggiornamento di un documento. Se si esegue il metodo per la creazione di un nuovo documento questo parametro sara null.
      */
-    private createOrUpdateDoc(docToBeUpdated: Doc): void {
+    private createOrUpdateDoc(docToBeUpdated: Doc | null): void {
         console.log('@@@', 'DocsTableComponent', 'createOrUpdateDoc', docToBeUpdated);
         const dialogConfig = new MatDialogConfig<Doc>();
         dialogConfig.disableClose = true;
@@ -256,10 +253,10 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 // In input non è stato passato un documento? 
                 if (!docToBeUpdated) {
                     // ... NO siamo in fase di creazione di un nuovo documento
-                    this.AddDocPrivate(docData);
+                    this.addDocPrivate(docData);
                 } else {
                     // ... SI siamo in fase di aggiornamento di un documento esistente                    
-                    
+                    this.updateDocPrivate(docToBeUpdated.id, docData);
                 }                
             });
     }
@@ -268,11 +265,11 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * Crea un nuovo documento
      * @param docData - dati con cui create il documento
      */
-    private AddDocPrivate(docData: Partial<Doc>): void {
-        console.log('@@@', 'DocsTableComponent', 'AddDocPrivate');
+    private addDocPrivate(docData: Partial<Doc>): void {
+        console.log('@@@', 'DocsTableComponent', 'addDocPrivate');
         try {
             this._loadingService.show('Creazione del nuovo documento in corso...');
-            this._docsService.AddDoc(docData)
+            this._docsService.addDoc(docData)
                 .pipe(
                     concatMap(documentReference => {
                         return this._docsService.getDoc(documentReference);
@@ -281,7 +278,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                     finalize(() => this._loadingService.hide())
                 )
                 .subscribe(documentSnapshot => {
-                    console.log('@@@', 'DocsTableComponent', 'AddDocPrivate', 'subscribe', documentSnapshot);
+                    console.log('@@@', 'DocsTableComponent', 'addDocPrivate', 'subscribe', documentSnapshot);
                     let newDoc: Doc | undefined = documentSnapshot.data();
                     if (!newDoc) {
                         throw new Error("La creazione del nuovo doc non è andata a buon fine");
@@ -289,6 +286,35 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                     const docs: Doc[] = this.dataSource.getData;
                     docs.push(newDoc);
                     this.dataSource.setData(docs);
+                });
+        } catch (error) {
+            this.showError(error);
+            this._loadingService.hide()
+        }
+    }
+
+    private updateDocPrivate(id: string, docData: Partial<Doc>): void {
+        console.log('@@@', 'DocsTableComponent', 'updateDocPrivate');
+        try {
+            this._loadingService.show('Aggiornamento del documento in corso...');
+            this._docsService.updateDoc(id, docData)
+                .pipe(
+                    concatMap(documentReference => {
+                        return this._docsService.getDoc(documentReference);
+                    }),
+                    delay(500),
+                    finalize(() => this._loadingService.hide())
+                )
+                .subscribe(documentSnapshot => {
+                    console.log('@@@', 'DocsTableComponent', 'updateDocPrivate', 'subscribe', documentSnapshot);
+                    let docUpdated: Doc | undefined = documentSnapshot.data();
+                    if (!docUpdated) {
+                        throw new Error("L'aggiornamento del record non è andato a buon fine");
+                    }
+                    console.log('pppppppppppppppppppppppppppppppp', docUpdated);
+                    // const docs: Doc[] = this.dataSource.getData;
+                    // docs.push(newDoc);
+                    // this.dataSource.setData(docs);
                 });
         } catch (error) {
             this.showError(error);
