@@ -57,9 +57,9 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * @param _snackBar - servizio che permette di mostrare SnackBar con messaggi o richieste di conferma
      */
     constructor(private _docsService: DocsService,
-        private _dialog: MatDialog,
-        private _snackBar: MatSnackBar,
-        private _loadingService: LoadingService) {
+                private _dialog: MatDialog,
+                private _snackBar: MatSnackBar,
+                private _loadingService: LoadingService) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
     }
 
@@ -117,6 +117,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public addDoc(): void {
         console.log('@@@', 'DocsTableComponent', 'addDoc');
+        // Mostra l'interfaccia utente che permette la creazione di un nuovo documento
         this.createOrUpdateDoc(null);
     }
 
@@ -217,6 +218,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     public doubleClickOnTableRow(event: MouseEvent, doc: Doc): void {
         console.log('@@@', 'DocsTableComponent', 'doubleClickOnTableRow', event, doc);
+        // Mostra all'utente l'interfaccia utente che permette la modifica del documento
         this.createOrUpdateDoc(doc);
     }
 
@@ -293,6 +295,11 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * Aggiornare un sottoinsieme dei campi del documento
+     * @param id id del documento da aggiornare
+     * @param docData campi del documento da aggiornare
+     */
     private updateDocPrivate(id: string, docData: Partial<Doc>): void {
         console.log('@@@', 'DocsTableComponent', 'updateDocPrivate');
         try {

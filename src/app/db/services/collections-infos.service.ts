@@ -6,6 +6,7 @@ import {
     collection, 
     CollectionReference, 
     doc, 
+    DocumentReference, 
     getDocs, 
     onSnapshot, 
     Query, 
@@ -27,18 +28,34 @@ export const COLLECTION_NAME_COLLECTIONSINFOS = 'collectionsInfos';
 })
 export class CollectionsInfosService {
 
+    // #region Variables
+
+    // #region Variables Private
+
     /**
      * Lista di tutti gli oggetti di gestione dei CollectionInfo di tutte le collection gestire
      */
     private listOfAllCollectionInfoRuntimeHandler: CollectionInfoRuntimeHandler[] = [];
 
+    // #endregion
+
+    // #endregion
+
+    // #region LifeCycle
+
     /**
      * Costruttore
-     * @param firebase servizio per connessione a firebase
+     * @param _firebase - servizio per connessione a firebase
      */
-    constructor(private firebase: InitFirebaseService) {
+    constructor(private _firebase: InitFirebaseService) {
         console.log('@@@', 'CollectionsInfosService', 'constructor');
     }
+
+    // #endregion
+
+    // #region Methods
+
+    // #region Methods Public
 
     /**
      * Caricamento dei dati della collection senza connessione realtime
@@ -46,7 +63,8 @@ export class CollectionsInfosService {
      */
     public loadAllCollectionsInfos(): Observable<CollectionInfo[]> {
         console.log('@@@', 'CollectionsInfosService', 'loadAllCollectionsInfos');
-        this.firebase.throwErrorIfNotInitialized();
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
         // Creo un observable sulla query che mi restituisce tutti i dati della collection
         const queryGetAllDocumentsFromCollection: Query<CollectionInfo> = query(this.getCollectionReference());
         const allCollectionsInfos: Observable<CollectionInfo[]> = this.getCollectionsInfosFromQuery(queryGetAllDocumentsFromCollection);
@@ -77,7 +95,7 @@ export class CollectionsInfosService {
     public attachCollectionInfo(collectionName: string) {
         console.log('@@@', 'CollectionsInfosService', 'attachAllCollectionsInfos');
         const unsubscribe: Unsubscribe = onSnapshot(
-            doc(this.firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS, collectionName).withConverter(collectionInfoConverter), { includeMetadataChanges: true }, 
+            doc(this._firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS, collectionName).withConverter(collectionInfoConverter), { includeMetadataChanges: true }, 
             documentSnapshot => {
                 console.log('@@@', 'CollectionsInfosService', 'attachAllCollectionsInfos', 'onSnapshot');
                 // Dato restituito dal database e tipizzato
@@ -126,6 +144,15 @@ export class CollectionsInfosService {
     }   
 
     /**
+     * Restituisce il riferimento tipizzato al documento che rappresenta il collectioninfo relativo alla collection con il nome passato in input
+     * @param collectionName nome della collection della quale ottenere il riferimento al relativo collectioninfo
+     * @returns riferimento al documento tipizzato del collectioninfo relativo alla collection con il nome passato in input
+     */
+    public getCollectionInfoReferenceByCollectionName(collectionName: string): DocumentReference<CollectionInfo> {
+        return doc(this._firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS, collectionName).withConverter(collectionInfoConverter);        
+    }   
+
+    /**
      * Ottenere una copia della lista completa dei gestori di CollectionInfo di tutte le collection gestite
      * @returns copia della lista completa dei gestori di CollectionInfo di tutte le collection gestite
      */
@@ -133,13 +160,17 @@ export class CollectionsInfosService {
         return [ ...this.listOfAllCollectionInfoRuntimeHandler ];
     }
 
+    // #endregion
+
+    // #region Methods Private
+
     /**
      * Restituisce una observable per ottenere tutti i documenti della collection
-     * @param q - query per ricavari tutti i documenti della collection
+     * @param queryExecutor - query per ricavari tutti i documenti della collection
      * @returns - observable con i documenti di tutte le collection suddivisi per nome collection
      */
-    private getCollectionsInfosFromQuery(q: Query<CollectionInfo>): Observable<CollectionInfo[]> {
-        return defer(() => getDocs(q))
+    private getCollectionsInfosFromQuery(queryExecutor: Query<CollectionInfo>): Observable<CollectionInfo[]> {
+        return defer(() => getDocs(queryExecutor))
             .pipe(                
                 map(querySnapshot => {
                     const collectionsInfos: CollectionInfo[] = [];
@@ -157,7 +188,11 @@ export class CollectionsInfosService {
      * @returns riferimento alla collection con impostato il converter per tipizzare i dati restituiti dal database
      */
     private getCollectionReference(): CollectionReference<CollectionInfo> {
-        return collection(this.firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS).withConverter(collectionInfoConverter);
+        return collection(this._firebase.firestore, COLLECTION_NAME_COLLECTIONSINFOS).withConverter(collectionInfoConverter);
     }
+
+    // #endregion
+
+    // #endregion
 
 }

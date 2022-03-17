@@ -27,6 +27,8 @@ import docConverter from '../models/docs/doc.converter';
 import { InitFirebaseService } from './init-firebase.service';
 import { Doc } from '../models/docs/doc';
 import { OrderByCondition } from '../models/shared/order-by-condition';
+import { CollectionsInfosService } from './collections-infos.service';
+import { CollectionInfo } from '../models/shared/collectionsInfos/collection-info';
 
 export const COLLECTION_NAME_DOCS = 'docs';
 
@@ -40,7 +42,8 @@ export class DocsService {
     /**
      * Costruttore
      */
-    constructor(private firebase: InitFirebaseService) {        
+    constructor(private _firebase: InitFirebaseService,
+                private _collectionsInfosService: CollectionsInfosService) {        
         console.log('@@@', 'DocsService', 'constructor');
     }
 
@@ -59,7 +62,9 @@ export class DocsService {
      */
     public getAllDocs(): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'getAllDocs');
-        this.firebase.throwErrorIfNotInitialized();
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
+        // Prepara la query che ricava tutti i documenti della collection
         const queryExecutor = query(this.getCollectionReference());
         return this.getDocsFromQuery(queryExecutor);
     }
@@ -72,16 +77,20 @@ export class DocsService {
      */
     public query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'query', orderByConditions);
-        this.firebase.throwErrorIfNotInitialized();
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
+        // Riferimento alla collection
         const collectionReference = this.getCollectionReference();
-        const queryConstraints: QueryConstraint[] = [];
         // Aggiunge le eventuali condizioni di ordinamento passate al metodo
+        const queryConstraints: QueryConstraint[] = [];
         if (orderByConditions) {
             orderByConditions.forEach(orderByCondition => {
                 queryConstraints.push(orderBy(orderByCondition.fieldName, orderByCondition.orderByDirection));
             });
         }
+        // Prepara il comando che permette l'esecuzione della query
         const queryExecutor = query(collectionReference, ...queryConstraints);
+        // Restituisce l'observable a cui sottoscriversi per eseguire la query ed ottenere i documenti tipizzati
         return this.getDocsFromQuery(queryExecutor);
     }
 
@@ -93,7 +102,8 @@ export class DocsService {
      */
     public getDoc(documentReference: DocumentReference<Doc>): Observable<DocumentSnapshot<Doc>> {
         console.log('@@@', 'DocsService', 'getDoc', documentReference);                 
-        this.firebase.throwErrorIfNotInitialized();
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
         return defer(() => getDoc(documentReference));
     }
 
@@ -105,8 +115,9 @@ export class DocsService {
      */
     public getDocReference(id: string): DocumentReference<Doc> {
         console.log('@@@', 'DocsService', 'getDocReference', id);                 
-        this.firebase.throwErrorIfNotInitialized();
-        return doc(this.firebase.firestore, COLLECTION_NAME_DOCS, id).withConverter(docConverter);        
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
+        return doc(this._firebase.firestore, COLLECTION_NAME_DOCS, id).withConverter(docConverter);        
     }
 
     // #endregion
@@ -120,14 +131,23 @@ export class DocsService {
      */
     public addDoc(docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
         console.log('@@@', 'DocsService', 'addDoc', docData);
-        this.firebase.throwErrorIfNotInitialized();
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
         return defer(() => this.AddDocPrivate(docData));
     }
 
+    /**
+     * Prepara il comando a cui sottoscriversi per aggiornare un documento esistente e per ottenere un riferimento al documento creato
+     * @param id - id del documento da aggiornare
+     * @param docData - dati del documento da aggiornare
+     * @returns un observable a cui sottoscriversi per scatenare l'aggiornamento del documento
+     */
     public updateDoc(id: string, docData: Partial<Doc>): Observable<DocumentReference<Doc>> {                
         console.log('@@@', 'DocsService', 'updateDoc', id, docData);
-        this.firebase.throwErrorIfNotInitialized();
-        return defer(() => this.UpdateDocPrivate(id, docData));
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
+        // Creo l'observable alla quale è necessario sottoscriversi per scatenare l'aggiornamento
+        return defer(() => this.updateDocPrivate(id, docData));
     }
 
     /**
@@ -137,7 +157,8 @@ export class DocsService {
      */
     public deleteDoc(documentReference: DocumentReference<unknown>): Observable<void> {
         console.log('@@@', 'DocsService', 'deleteDoc');
-        this.firebase.throwErrorIfNotInitialized();
+        // Verifica che il metodo sia utilizzabile
+        this._firebase.throwErrorIfNotInitialized();
         return defer(() => deleteDoc(documentReference));
     }
 
@@ -148,7 +169,8 @@ export class DocsService {
     public deleteDocsByDocuments(documents: Doc[]): Observable<void> {
         console.log('@@@', 'DocsService', 'deleteDocsByDocuments');
         // Verifica che il metodo sia utilizzabile
-        this.firebase.throwErrorIfNotInitialized();
+        this._firebase.throwErrorIfNotInitialized();
+        this.checkMaximunDocumentsForBatch(documents.length);
         // Esegue l'eliminazione dei documenti
         return from(this.deleteDocsByDocumentsPrivate(documents));
     }
@@ -204,25 +226,49 @@ export class DocsService {
      */
     private async AddDocPrivate(docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
         console.log('@@@', 'DocsService', 'AddDocPrivate', docData);
+        // Timestamp
         docData.timestampClientAddDoc = Timestamp.now();
         docData.timestampClientUpdateDoc = Timestamp.now();
-        let newDoc = doc(this.getCollectionReference());
-        const batch = writeBatch(this.firebase.firestore);                
-        batch.set<Partial<Doc>>(newDoc, docData);        
+        // Crea un riferimento per un nuovo documento.
+        // Crea l'id automatico di Firestore.
+        let newDoc: DocumentReference<Doc> = doc(this.getCollectionReference());
+        // Crea il batch        
+        const batch = writeBatch(this._firebase.firestore);                
+        ///////////////////////////////////
+        // CREAZIONE DEL NUOVO DOCUMENTO //
+        ///////////////////////////////////
+        // Crea il nuovo documento con i dati passati in input
+        batch.set<Partial<Doc>>(newDoc, docData);
+        // Imposta i timestamp lato server
         batch.update<Partial<Doc>>(newDoc, { 
             timestampServerAddDoc: serverTimestamp(), 
             timestampServerUpdateDoc: serverTimestamp() 
         });
-        await batch.commit();        
+        //////////////////////////
+        // INCREMENTA CONTATORE //
+        //////////////////////////
+        // batch.update(this.GetCollectionInfoReference(), {
+
+        // });
+        ////////////////////////////
+        // COMMIT DELLE MODIFICHE //
+        ////////////////////////////
+        await batch.commit();
         return newDoc;
     } 
 
-    private async UpdateDocPrivate(id: string, docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
-        console.log('@@@', 'DocsService', 'UpdateDocPrivate', docData);
+    /**
+     * Esegue l'aggiornamento di un documento
+     * @param id id del documento da aggiornare
+     * @param docData dati del documento da aggiornare
+     * @returns una promise che restituisce un riferimento al documento aggiornato
+     */
+    private async updateDocPrivate(id: string, docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
+        console.log('@@@', 'DocsService', 'updateDocPrivate', docData);
         // Timestamp dell'aggiornamento del documento lato client
         docData.timestampClientUpdateDoc = Timestamp.now();        
         // Riferimento al documento da aggiornare
-        const docToBeUpdated = this.getDocReference(id);
+        const docToBeUpdated: DocumentReference<Doc> = this.getDocReference(id);        
         // Aggiornamento del documento
         await updateDoc<Partial<Doc>>(docToBeUpdated, { ...docData, timestampServerAddDoc: serverTimestamp() });
         // Restituisce il rifermento al documento
@@ -236,17 +282,22 @@ export class DocsService {
      */
     private async deleteDocsByDocumentsPrivate(documents: Doc[]): Promise<void> {
         console.log('@@@', 'DocsService', 'deleteDocsByDocuments');
-        // Verifica che il metodo sia utilizzabile
-        this.firebase.throwErrorIfNotInitialized();
-        this.checkMaximunDocumentsForBatch(documents.length);
         // Inizializza il batch
-        const batch = writeBatch(this.firebase.firestore);                
+        const batch = writeBatch(this._firebase.firestore);                
         // Cicla su tutti i documenti da eliminare
         for (const document of documents) {
             batch.delete(this.getDocReference(document.id));            
         }        
         // Commit delle cancellazioni
         return await batch.commit();
+    }
+
+    // #endregion
+
+    // #region Metodi che gestiscono il collectionInfo
+
+    private GetCollectionInfoReference(): DocumentReference<CollectionInfo> {
+        return this._collectionsInfosService.getCollectionInfoReferenceByCollectionName(COLLECTION_NAME_DOCS);
     }
 
     // #endregion
@@ -258,7 +309,7 @@ export class DocsService {
      * @returns restituisce un riferimento alla collection docs tipizzato con il converter
      */
     private getCollectionReference(): CollectionReference<Doc> {
-        return collection(this.firebase.firestore, COLLECTION_NAME_DOCS).withConverter(docConverter);
+        return collection(this._firebase.firestore, COLLECTION_NAME_DOCS).withConverter(docConverter);
     }
 
     // #endregion
