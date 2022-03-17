@@ -205,10 +205,14 @@ export class DocsService {
     private async AddDocPrivate(docData: Partial<Doc>): Promise<DocumentReference<Doc>> {
         console.log('@@@', 'DocsService', 'AddDocPrivate', docData);
         docData.timestampClientAddDoc = Timestamp.now();
+        docData.timestampClientUpdateDoc = Timestamp.now();
         let newDoc = doc(this.getCollectionReference());
         const batch = writeBatch(this.firebase.firestore);                
         batch.set<Partial<Doc>>(newDoc, docData);        
-        batch.update<Partial<Doc>>(newDoc, { timestampServerAddDoc: serverTimestamp() });
+        batch.update<Partial<Doc>>(newDoc, { 
+            timestampServerAddDoc: serverTimestamp(), 
+            timestampServerUpdateDoc: serverTimestamp() 
+        });
         await batch.commit();        
         return newDoc;
     } 
