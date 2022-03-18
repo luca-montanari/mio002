@@ -12,7 +12,7 @@ export default {
     ): CollectionInfo {
         const data = snapshot.data(options)!;
         const collectionInfo: CollectionInfo = {
-            collectionName: snapshot.id,
+            id: snapshot.id,
             ...<any>data
         }
         return collectionInfo;

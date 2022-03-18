@@ -75,7 +75,7 @@ export class CollectionsInfosService {
             allDocumentsExistings.forEach(collectionInfo => {
                 const realtimeConnection: BehaviorSubject<CollectionInfoRuntimeHandler | null> = new BehaviorSubject<CollectionInfoRuntimeHandler | null>(null);
                 const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler = {
-                    collectionName: collectionInfo.collectionName,
+                    collectionName: collectionInfo.id,
                     collectionInfo: collectionInfo,
                     timeStamp: timeStamp,
                     realtimeConnection: realtimeConnection,

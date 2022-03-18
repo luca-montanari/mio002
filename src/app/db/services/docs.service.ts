@@ -19,7 +19,8 @@ import {
     doc,
     getDoc,
     deleteDoc,
-    DocumentSnapshot
+    DocumentSnapshot,
+    increment
 } from "firebase/firestore";
 
 import { DbModule } from '../db.module';
@@ -247,9 +248,13 @@ export class DocsService {
         //////////////////////////
         // INCREMENTA CONTATORE //
         //////////////////////////
-        // batch.update(this.GetCollectionInfoReference(), {
-
-        // });
+        batch.set<CollectionInfo>(this.GetCollectionInfoReference(), {
+            counters: {
+                counter: {
+                    value: increment(10)
+                }
+            }
+        }, { merge: true });
         ////////////////////////////
         // COMMIT DELLE MODIFICHE //
         ////////////////////////////

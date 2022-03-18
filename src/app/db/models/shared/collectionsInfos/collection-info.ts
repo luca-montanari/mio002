@@ -1,6 +1,6 @@
-import { Counter } from "./counter";
+import { Counters } from "./counters";
 
 export interface CollectionInfo {
-    collectionName: string;
-    counters: Counter[];
+    id: string;
+    counters: Counters;
 }
