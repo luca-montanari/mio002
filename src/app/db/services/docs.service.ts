@@ -251,7 +251,7 @@ export class DocsService {
         batch.set<CollectionInfo>(this.GetCollectionInfoReference(), {
             counters: {
                 counter: {
-                    value: increment(10)
+                    value: increment(1)
                 }
             }
         }, { merge: true });
@@ -291,8 +291,18 @@ export class DocsService {
         const batch = writeBatch(this._firebase.firestore);                
         // Cicla su tutti i documenti da eliminare
         for (const document of documents) {
-            batch.delete(this.getDocReference(document.id));            
-        }        
+            batch.delete(this.getDocReference(document.id));
+        }
+        //////////////////////////
+        // DECREMENTA CONTATORE //
+        //////////////////////////
+        batch.set<CollectionInfo>(this.GetCollectionInfoReference(), {
+            counters: {
+                counter: {
+                    value: increment(-documents.length)
+                }
+            }
+        }, { merge: true });
         // Commit delle cancellazioni
         return await batch.commit();
     }
