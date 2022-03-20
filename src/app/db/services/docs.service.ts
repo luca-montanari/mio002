@@ -311,6 +311,10 @@ export class DocsService {
 
     // #region Metodi che gestiscono il collectionInfo
 
+    /**
+     * Restituisce un riferimento al documento collectioninfo della collection
+     * @returns riferimento al documento collectioninfo della collection
+     */
     private GetCollectionInfoReference(): DocumentReference<CollectionInfo> {
         return this._collectionsInfosService.getCollectionInfoReferenceByCollectionName(COLLECTION_NAME_DOCS);
     }
