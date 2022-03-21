@@ -38,7 +38,7 @@ export class DocsTableDataSource extends DataSource<Doc> {
      * Serve per rilasciare le risorse una volta che viene distrutto il componente che contiene la tabella
      */
     public disconnect(): void {
-        console.log('@@@', 'DocsDataSource', 'disconnect');
+        console.log('@@@', 'DocsDataSource', 'disconnect');        
         this.dataStream.complete();
     }
 

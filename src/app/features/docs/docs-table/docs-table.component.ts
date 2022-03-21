@@ -1,10 +1,11 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 
 import { catchError, concatMap, delay, finalize, map, Observable, of } from 'rxjs';
 
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarConfig, MatSnackBarRef } from '@angular/material/snack-bar';
+import { MatSort } from '@angular/material/sort';
 
 import { COLLECTION_NAME_DOCS, DocsService } from 'src/app/db/services/docs.service';
 import { DocsTableDataSource } from './docs-table.datasource';
@@ -18,7 +19,7 @@ import { DocsAskConfirmationSnackbarComponent } from '../docs-ask-confirmation-s
 import { DocsAskConfirmationSnackbarData } from '../docs-ask-confirmation-snackbar/docs-ask-confirmation-snackbar-data';
 import { LoadingData } from 'src/app/shared/services/models/loadingData';
 import { LoadingService } from 'src/app/shared/services/loading.service';
-
+import { MatPaginator } from '@angular/material/paginator';
 @Component({
     selector: 'mio002-docs-table',
     templateUrl: './docs-table.component.html',
@@ -30,7 +31,14 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
     // #region Variables Public
 
+    // Riceve in input i dati generali di gestione della collection
     @Input() public collectionInfoRuntimeHandler!: CollectionInfoRuntimeHandler;
+
+    // Riferimento all'elemento di gestione dell'ordinamento
+    @ViewChild(MatSort) matSort!: MatSort;
+
+    // Riferimento all'elemento di gestione della paginazione
+    @ViewChild(MatPaginator) matPaginator!: MatPaginator;
 
     // Colonne visualizzate in tabella
     public displayedColumns: string[] = ['select', 'code', 'description', 'category'];
@@ -57,9 +65,9 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      * @param _snackBar - servizio che permette di mostrare SnackBar con messaggi o richieste di conferma
      */
     constructor(private _docsService: DocsService,
-                private _dialog: MatDialog,
-                private _snackBar: MatSnackBar,
-                private _loadingService: LoadingService) {
+        private _dialog: MatDialog,
+        private _snackBar: MatSnackBar,
+        private _loadingService: LoadingService) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
     }
 
@@ -68,33 +76,8 @@ export class DocsTableComponent implements OnInit, OnDestroy {
      */
     ngOnInit(): void {
         console.log('@@@', 'DocsTableComponent', 'ngOnInit');
-        // Crea le condizioni di ordinamento da utilizzare nell'interrogazione
-        const orderByConditions: OrderByCondition[] = [];
-        const orderByCondition: OrderByCondition = {
-            fieldName: 'code',
-            orderByDirection: 'asc'
-        };
-        orderByConditions.push(orderByCondition);
-        // Interroga il database per ricavare i dati da mostrare nella griglia
-        try {
-            this._loadingService.show('Caricamento dei dati in corso...');
-            this._docsService.query(orderByConditions)
-                .pipe(
-                    catchError(err => {
-                        this.showError(err);
-                        return of([]);
-                    }),
-                    delay(500),
-                    finalize(() => this._loadingService.hide())
-                )
-                .subscribe(docs => {
-                    console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'query', 'subscribe', docs);
-                    this.dataSource.setData(docs);
-                });
-        } catch (error) {
-            this.showError(error);
-            this._loadingService.hide()
-        }
+        // Carica la prima pagina di documenti
+        this.loadPage();
     }
 
     /**
@@ -223,10 +206,55 @@ export class DocsTableComponent implements OnInit, OnDestroy {
     }
 
     // #endregion
-    
+
     // #endregion
 
     // #region Methods Private
+
+    // #region Metodi che interrogano il database per ottenere i documenti contenuti nella collection
+
+    private loadPage(): void {
+
+        // Crea le condizioni di ordinamento da utilizzare nell'interrogazione
+        const orderByConditions: OrderByCondition[] = [];
+        let orderByCondition: OrderByCondition;
+        if (this.matSort) {
+            orderByCondition = {
+                fieldName: this.matSort.active,
+                orderByDirection: this.matSort.direction === 'asc' ? 'asc' : 'desc'
+            };    
+        } else {
+            orderByCondition = {
+                fieldName: 'code',
+                orderByDirection: 'asc'
+            };    
+        }
+        orderByConditions.push(orderByCondition);
+
+        // Interroga il database per ricavare i dati da mostrare nella griglia
+        try {
+            this._loadingService.show('Caricamento dei dati in corso...');
+            this._docsService.query(orderByConditions)
+                .pipe(
+                    catchError(err => {
+                        this.showError(err);
+                        return of([]);
+                    }),
+                    delay(500),
+                    finalize(() => this._loadingService.hide())
+                )
+                .subscribe(docs => {
+                    console.log('@@@', 'DocsTableComponent', 'ngOnInit', 'query', 'subscribe', docs);
+                    this.dataSource.setData(docs);
+                });
+        } catch (error) {
+            this.showError(error);
+            this._loadingService.hide()
+        }
+
+    }
+
+    // #endregion
 
     // #region Metodi che eseguono un qualsiasi aggiornamento della collection
 
@@ -259,7 +287,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 } else {
                     // ... SI siamo in fase di aggiornamento di un documento esistente                    
                     this.updateDocPrivate(docToBeUpdated.id, docData);
-                }                
+                }
             });
     }
 
@@ -351,7 +379,7 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         } catch (error) {
             this.showError(error);
             this._loadingService.hide()
-        }    
+        }
     }
 
     // #endregion
