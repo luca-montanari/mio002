@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 
 import { catchError, concatMap, delay, finalize, map, Observable, of } from 'rxjs';
 
@@ -25,7 +25,7 @@ import { MatPaginator } from '@angular/material/paginator';
     templateUrl: './docs-table.component.html',
     styleUrls: ['./docs-table.component.scss']
 })
-export class DocsTableComponent implements OnInit, OnDestroy {
+export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // #region Variables
 
@@ -78,6 +78,24 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         console.log('@@@', 'DocsTableComponent', 'ngOnInit');
         // Carica la prima pagina di documenti
         this.loadPage();
+    }
+
+    /**
+     * ngAfterViewInit
+     */
+    ngAfterViewInit(): void {
+        console.log('@@@', 'DocsTableComponent', 'ngAfterViewInit');
+        // Si mette in ascolto della modfica della colonna da usare per l'ordinamento
+        this.matSort.sortChange.subscribe(() => {
+            console.log('@@@', 'DocsTableComponent', 'ngAfterViewInit', 'sortChange', 'subscribe', this.matSort.active, this.matSort.direction);            
+            this.loadPage();
+        });
+        // Si mette in ascolto della modifica della pagina da visualizzare
+        this.matPaginator.page.subscribe(pageEvent => {
+            console.log('@@@', 'Test001Component', 'ngAfterViewInit', 'paginator', 'subscribe', pageEvent, this.matPaginator.pageIndex);
+            this.loadPage();
+        });
+
     }
 
     /**
@@ -190,6 +208,14 @@ export class DocsTableComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * Restituisce il numero di documenti totali presenti nella collection
+     * @returns numero di documenti totali presenti nella collection
+     */
+    public getDocumentsCount(): number {
+        return this.collectionInfoRuntimeHandler.collectionInfoClient.counters.counter.value;
+    }
+
     // #endregion
 
     // #region Metodi per la gestione degli eventi generati nella griglia
@@ -213,7 +239,19 @@ export class DocsTableComponent implements OnInit, OnDestroy {
 
     // #region Metodi che interrogano il database per ottenere i documenti contenuti nella collection
 
+    /**
+     * Carica una pagina di documenti
+     */
     private loadPage(): void {
+
+        // if (this.matPaginator) {
+        //     console.log('ggggggggggggg', this.getDocumentsCount(), this.matPaginator.getNumberOfPages(), this.matPaginator.pageIndex);
+        // };
+        
+        // Dati per la paginazione
+        // Numero di documenti da mostrare per pagina
+        const pageSize: number = this.matPaginator.pageSize;
+        const pageIndex: number = this.matPaginator.pageIndex;
 
         // Crea le condizioni di ordinamento da utilizzare nell'interrogazione
         const orderByConditions: OrderByCondition[] = [];
@@ -228,13 +266,13 @@ export class DocsTableComponent implements OnInit, OnDestroy {
                 fieldName: 'code',
                 orderByDirection: 'asc'
             };    
-        }
+        };
         orderByConditions.push(orderByCondition);
 
         // Interroga il database per ricavare i dati da mostrare nella griglia
         try {
             this._loadingService.show('Caricamento dei dati in corso...');
-            this._docsService.query(orderByConditions)
+            this._docsService.query(pageIndex, pageSize, orderByConditions)
                 .pipe(
                     catchError(err => {
                         this.showError(err);

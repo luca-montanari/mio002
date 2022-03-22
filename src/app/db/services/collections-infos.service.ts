@@ -77,6 +77,7 @@ export class CollectionsInfosService {
                 const collectionInfoRuntimeHandler: CollectionInfoRuntimeHandler = {
                     collectionName: collectionInfo.id,
                     collectionInfo: collectionInfo,
+                    collectionInfoClient: collectionInfo,
                     timeStamp: timeStamp,
                     realtimeConnection: realtimeConnection,
                     realtimeConnection$: realtimeConnection.asObservable(),

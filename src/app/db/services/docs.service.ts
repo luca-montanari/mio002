@@ -20,7 +20,8 @@ import {
     getDoc,
     deleteDoc,
     DocumentSnapshot,
-    increment
+    increment,
+    startAt
 } from "firebase/firestore";
 
 import { DbModule } from '../db.module';
@@ -73,10 +74,13 @@ export class DocsService {
     /**
      * Prepara una query da eseguire sul database.
      * La query non viene eseguita con la sola chiamata del metodo in quanto viene restituito un observable.
+     * @param pageIndex - indice della pagina da mostrare
+     * @param pageSize - numero di documenti da caricare per ogni pagina
+     * @param lastDocument - ultimo documento mostrato nella pagina corrente
      * @param orderByConditions - condizioni di ordinamento da aggiungere alla query
      * @returns restituisce un Observable con array di Doc
      */
-    public query(orderByConditions: OrderByCondition[]): Observable<Doc[]> {
+    public query(pageIndex: number, pageSize: number, lastDocument: Doc, orderByConditions: OrderByCondition[]): Observable<Doc[]> {
         console.log('@@@', 'DocsService', 'query', orderByConditions);
         // Verifica che il metodo sia utilizzabile
         this._firebase.throwErrorIfNotInitialized();
@@ -88,9 +92,12 @@ export class DocsService {
             orderByConditions.forEach(orderByCondition => {
                 queryConstraints.push(orderBy(orderByCondition.fieldName, orderByCondition.orderByDirection));
             });
-        }
+        }                
+        // Aggiunge le  condizioni di paginazione
+        startAt(lastDocument);
+        
         // Prepara il comando che permette l'esecuzione della query
-        const queryExecutor = query(collectionReference, ...queryConstraints);
+        const queryExecutor = query<Doc>(collectionReference, ...queryConstraints);
         // Restituisce l'observable a cui sottoscriversi per eseguire la query ed ottenere i documenti tipizzati
         return this.getDocsFromQuery(queryExecutor);
     }
