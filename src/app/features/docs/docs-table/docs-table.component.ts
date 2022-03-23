@@ -27,6 +27,19 @@ import { MatPaginator } from '@angular/material/paginator';
 })
 export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
 
+    // #region Costants
+
+    // #region Costants Public
+
+    /**
+     * Numero di documeni per pagina di defaulr
+     */
+    public readonly PAGE_SIZE_DEFAULT: number = 5;
+
+    // #endregion
+
+    // #endregion
+
     // #region Variables
 
     // #region Variables Public
@@ -68,7 +81,7 @@ export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
         private _dialog: MatDialog,
         private _snackBar: MatSnackBar,
         private _loadingService: LoadingService) {
-        console.log('@@@', 'DocsTableComponent', 'constructor');
+        console.log('@@@', 'DocsTableComponent', 'constructor');        
     }
 
     /**
@@ -244,14 +257,20 @@ export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
      */
     private loadPage(): void {
 
-        // if (this.matPaginator) {
-        //     console.log('ggggggggggggg', this.getDocumentsCount(), this.matPaginator.getNumberOfPages(), this.matPaginator.pageIndex);
-        // };
+        if (this.matPaginator) {
+            console.log('ggggggggggggg', this.getDocumentsCount(), this.matPaginator.getNumberOfPages(), this.matPaginator.pageIndex);
+        };
         
-        // Dati per la paginazione
-        // Numero di documenti da mostrare per pagina
-        const pageSize: number = this.matPaginator.pageSize;
-        const pageIndex: number = this.matPaginator.pageIndex;
+        // Dati per la paginazione.
+        // Numero di documenti da mostrare per pagina.
+        const pageSize: number = this.matPaginator ? this.matPaginator.pageSize : this.PAGE_SIZE_DEFAULT;
+        // Inidice della pagina
+        const pageIndex: number = this.matPaginator?.pageIndex;
+        // Ultimo documento caricato nella pagina corrente
+        let lastDocument: Doc | null = null;        
+        if (pageIndex > 0) {
+            lastDocument = this.dataSource.getData[pageSize - 1];
+        }
 
         // Crea le condizioni di ordinamento da utilizzare nell'interrogazione
         const orderByConditions: OrderByCondition[] = [];
@@ -272,7 +291,7 @@ export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
         // Interroga il database per ricavare i dati da mostrare nella griglia
         try {
             this._loadingService.show('Caricamento dei dati in corso...');
-            this._docsService.query(pageIndex, pageSize, orderByConditions)
+            this._docsService.query(pageSize, lastDocument, orderByConditions)
                 .pipe(
                     catchError(err => {
                         this.showError(err);

@@ -21,7 +21,9 @@ import {
     deleteDoc,
     DocumentSnapshot,
     increment,
-    startAt
+    startAt,
+    limit,
+    startAfter
 } from "firebase/firestore";
 
 import { DbModule } from '../db.module';
@@ -74,28 +76,30 @@ export class DocsService {
     /**
      * Prepara una query da eseguire sul database.
      * La query non viene eseguita con la sola chiamata del metodo in quanto viene restituito un observable.
-     * @param pageIndex - indice della pagina da mostrare
      * @param pageSize - numero di documenti da caricare per ogni pagina
      * @param lastDocument - ultimo documento mostrato nella pagina corrente
      * @param orderByConditions - condizioni di ordinamento da aggiungere alla query
      * @returns restituisce un Observable con array di Doc
      */
-    public query(pageIndex: number, pageSize: number, lastDocument: Doc, orderByConditions: OrderByCondition[]): Observable<Doc[]> {
-        console.log('@@@', 'DocsService', 'query', orderByConditions);
+    public query(pageSize: number, lastDocument: Doc | null, orderByConditions: OrderByCondition[]): Observable<Doc[]> {
+        console.log('@@@', 'DocsService', 'query', pageSize, lastDocument, orderByConditions);
         // Verifica che il metodo sia utilizzabile
         this._firebase.throwErrorIfNotInitialized();
         // Riferimento alla collection
         const collectionReference = this.getCollectionReference();
         // Aggiunge le eventuali condizioni di ordinamento passate al metodo
         const queryConstraints: QueryConstraint[] = [];
+        // Ordinamento
         if (orderByConditions) {
             orderByConditions.forEach(orderByCondition => {
                 queryConstraints.push(orderBy(orderByCondition.fieldName, orderByCondition.orderByDirection));
             });
         }                
-        // Aggiunge le  condizioni di paginazione
-        startAt(lastDocument);
-        
+        // Paginazione.
+        // Ultimo elemento della pagina precedente.
+        queryConstraints.push(lastDocument ? startAfter("cod5") : startAt(null));
+        // Numero di documenti da caricare per una pagina 
+        queryConstraints.push(limit(pageSize));
         // Prepara il comando che permette l'esecuzione della query
         const queryExecutor = query<Doc>(collectionReference, ...queryConstraints);
         // Restituisce l'observable a cui sottoscriversi per eseguire la query ed ottenere i documenti tipizzati
