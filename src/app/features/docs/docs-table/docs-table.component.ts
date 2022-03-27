@@ -32,7 +32,7 @@ export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
     // #region Costants Public
 
     /**
-     * Numero di documeni per pagina di defaulr
+     * Numero di documeni per pagina di default
      */
     public readonly PAGE_SIZE_DEFAULT: number = 5;
 
@@ -76,12 +76,14 @@ export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
      * @param _docsService - servizio per gestione della collection docs
      * @param _dialog - servizio per l'attivazione di dialog di anglur material
      * @param _snackBar - servizio che permette di mostrare SnackBar con messaggi o richieste di conferma
+     * @param _loadingService - servizio che permette di mostrare l'interfaccia di attesa di caricamento
      */
     constructor(private _docsService: DocsService,
-        private _dialog: MatDialog,
-        private _snackBar: MatSnackBar,
-        private _loadingService: LoadingService) {
-        console.log('@@@', 'DocsTableComponent', 'constructor');        
+                private _dialog: MatDialog,
+                private _snackBar: MatSnackBar,
+                private _loadingService: LoadingService) {
+        console.log('@@@', 'DocsTableComponent', 'constructor');
+        this.dataSource.collectionInfoRuntimeHandler = this.collectionInfoRuntimeHandler;
     }
 
     /**
@@ -258,7 +260,7 @@ export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
     private loadPage(): void {
 
         if (this.matPaginator) {
-            console.log('ggggggggggggg', this.getDocumentsCount(), this.matPaginator.getNumberOfPages(), this.matPaginator.pageIndex);
+            console.log('@@@ DEBUG @@@', this.getDocumentsCount(), this.matPaginator.getNumberOfPages(), this.matPaginator.pageIndex);
         };
         
         // Dati per la paginazione.

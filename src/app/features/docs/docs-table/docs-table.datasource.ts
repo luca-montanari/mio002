@@ -1,13 +1,32 @@
 import { DataSource } from '@angular/cdk/collections';
-import { Input } from '@angular/core';
 
 import { BehaviorSubject, Observable } from 'rxjs';
 
 import { Doc } from "src/app/db/models/docs/doc";
+import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectionsInfos/collection-info-runtime-handler';
 
 export class DocsTableDataSource extends DataSource<Doc> {
+    [x: string]: any;
 
-    private dataStream = new BehaviorSubject<Doc[]>([]);
+    // #region Variables
+
+    // #region Variables Private
+
+    // Riceve in input i dati generali di gestione della collection
+    public collectionInfoRuntimeHandler!: CollectionInfoRuntimeHandler;
+
+    // #endregion
+
+    // #region Variables Private
+
+    /**
+     * Store di tutti i documenti della collection
+     */
+    private _data = new BehaviorSubject<Doc[]>([]);
+
+    // #endregion
+
+    // #endregion    
 
     // #region LifeCycle
 
@@ -16,12 +35,12 @@ export class DocsTableDataSource extends DataSource<Doc> {
      */
     constructor() {
         super();
-        console.log('@@@', 'DocsDataSource', 'constructor');        
+        console.log('@@@', 'DocsDataSource', 'constructor');
     }
 
     // #endregion
 
-    // #region DataSource
+    // #region Extends DataSource
 
     /**
      * Caricamento dei dati nella griglia.
@@ -30,7 +49,7 @@ export class DocsTableDataSource extends DataSource<Doc> {
      */
     public connect(): Observable<Doc[]> {
         console.log('@@@', 'DocsDataSource', 'connect');
-        return this.dataStream;
+        return this._data;
     }
 
     /**
@@ -38,22 +57,32 @@ export class DocsTableDataSource extends DataSource<Doc> {
      * Serve per rilasciare le risorse una volta che viene distrutto il componente che contiene la tabella
      */
     public disconnect(): void {
-        console.log('@@@', 'DocsDataSource', 'disconnect');        
-        this.dataStream.complete();
+        console.log('@@@', 'DocsDataSource', 'disconnect');
+        this._data.complete();
     }
 
     // #endregion
 
-    public get getData(): Doc[] {
-        return this.dataStream.value;
-    }
+    // #region Methods
 
-    public setData(docs: Doc[]) {
-        this.dataStream.next(docs);
-    }
+    // #region Methods Public
 
-    public get getDataCount(): number {
-        return this.dataStream.value.length;
-    }
+    
+
+    // #endregion
+
+    // #endregion
+
+    // public getData(): Doc[] {
+    //     return this._data.value;
+    // }
+
+    // public setData(docs: Doc[]) {
+    //     this.dataStream.next(docs);
+    // }
+
+    // public getDataCount(): number {
+    //     return this.dataStream.value.length;
+    // }
 
 }
