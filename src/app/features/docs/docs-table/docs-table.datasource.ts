@@ -6,23 +6,44 @@ import { Doc } from "src/app/db/models/docs/doc";
 import { CollectionInfoRuntimeHandler } from 'src/app/db/models/shared/collectionsInfos/collection-info-runtime-handler';
 
 export class DocsTableDataSource extends DataSource<Doc> {
-    [x: string]: any;
-
+    
     // #region Variables
 
-    // #region Variables Private
+    // #region Variables Public
 
-    // Riceve in input i dati generali di gestione della collection
     public collectionInfoRuntimeHandler!: CollectionInfoRuntimeHandler;
 
     // #endregion
 
     // #region Variables Private
 
-    /**
-     * Store di tutti i documenti della collection
-     */
     private _data = new BehaviorSubject<Doc[]>([]);
+
+    private _pagesize: number;
+
+    // #endregion
+
+    // #endregion    
+
+    // #region Properties
+
+    // #region Properties Public
+
+    public get pageSize(): number {
+        return this._pagesize;
+    }
+
+    public set pageSize(pageSize: number) {
+        this._pagesize = pageSize;
+    }
+
+    // #endregion
+
+    // #region Properties Private
+
+    private get data(): Doc[] {
+        return this._data.value;
+    }
 
     // #endregion
 
@@ -66,12 +87,38 @@ export class DocsTableDataSource extends DataSource<Doc> {
     // #region Methods
 
     // #region Methods Public
-
     
+    public loadPage(pageIndex: number) {
+        console.log('@@@', 'DocsDataSource', 'loadPage');
+        const indexLastDocumentTbLoaded = ((pageIndex + 1) * this.pageSize) - 1;
+        if (this.data.length > indexLastDocumentTbLoaded + 1) {
+            this.loadPage
+        }
+    }
+
+    // #endregion
+
+    // #region Methods Private
+    
+    private loadPageFromDb(pageIndex: number) {
+        console.log('@@@', 'DocsDataSource', 'loadPageFromDb');
+    }
+
+    private loadPageFromMemory(pageIndex: number) {
+        console.log('@@@', 'DocsDataSource', 'loadPageFromDb');
+    }
 
     // #endregion
 
     // #endregion
+
+
+
+
+
+
+
+
 
     // public getData(): Doc[] {
     //     return this._data.value;

@@ -84,6 +84,7 @@ export class DocsTableComponent implements OnInit, AfterViewInit, OnDestroy {
                 private _loadingService: LoadingService) {
         console.log('@@@', 'DocsTableComponent', 'constructor');
         this.dataSource.collectionInfoRuntimeHandler = this.collectionInfoRuntimeHandler;
+        this.dataSource.pageSize = this.PAGE_SIZE_DEFAULT;
     }
 
     /**
